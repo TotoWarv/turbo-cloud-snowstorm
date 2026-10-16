@@ -8,6 +8,7 @@ using Orleans;
 using Turbo.Primitives.Admin.Grains;
 using Turbo.Primitives.Badges.Grains;
 using Turbo.Primitives.Catalog.Grains;
+using Turbo.Primitives.Game.Grains;
 using Turbo.Primitives.Guilds;
 using Turbo.Primitives.Guilds.Grains;
 using Turbo.Primitives.Habbicons.Grains;
@@ -42,6 +43,8 @@ namespace Turbo.Primitives.Orleans;
 
 public static class GrainFactoryExtensions
 {
+    private const long SNOWWAR_DIRECTORY_KEY = 0;
+
     public static IRoomGrain GetRoomGrain(this IGrainFactory factory, RoomId roomId) =>
         factory.GetGrain<IRoomGrain>((long)roomId.Value);
 
@@ -75,6 +78,12 @@ public static class GrainFactoryExtensions
         this IGrainFactory factory,
         PlayerId playerId
     ) => factory.GetGrain<IWiredTradeGrain>(playerId.Value);
+
+    public static ISnowWarDirectoryGrain GetSnowWarDirectoryGrain(this IGrainFactory factory) =>
+        factory.GetGrain<ISnowWarDirectoryGrain>(SNOWWAR_DIRECTORY_KEY);
+
+    public static ISnowWarGameGrain GetSnowWarGameGrain(this IGrainFactory factory, int gameId) =>
+        factory.GetGrain<ISnowWarGameGrain>(gameId);
 
     public static IRoomDirectoryGrain GetRoomDirectoryGrain(this IGrainFactory factory) =>
         factory.GetGrain<IRoomDirectoryGrain>(SingletonGrainId.GLOBAL);
