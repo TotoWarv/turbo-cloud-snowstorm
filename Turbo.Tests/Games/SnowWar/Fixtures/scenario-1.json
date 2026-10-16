@@ -1,0 +1,876 @@
+{
+  "seed": 1234,
+  "turns": 120,
+  "level": {
+    "fieldType": 0,
+    "name": "scenario-1",
+    "width": 24,
+    "height": 16,
+    "heightMap": [
+      "xx0000000000000000000000",
+      "000000000000000000000000",
+      "000000000000000000000000",
+      "000000000000000000000000",
+      "000000000000000000000000",
+      "00000000000000000000",
+      "000000000000000000000000",
+      "000000000000x00000000000",
+      "000000000000x00000000000",
+      "000000000000000000000000",
+      "000000000000000000000000",
+      "000000000000000000000000",
+      "000000000000000000000000",
+      "000000000000000000000000",
+      "000000000000000000000000",
+      "0000000000000000000000xx"
+    ],
+    "objects": [
+      {
+        "name": "snst_block1",
+        "x": 6,
+        "y": 4,
+        "direction": 0,
+        "altitude": 0
+      },
+      {
+        "name": "snst_block1",
+        "x": 6,
+        "y": 5,
+        "direction": 0,
+        "altitude": 0
+      },
+      {
+        "name": "snst_tree1",
+        "x": 10,
+        "y": 10,
+        "direction": 0,
+        "altitude": 0
+      },
+      {
+        "name": "snst_ballpile",
+        "x": 16,
+        "y": 3,
+        "direction": 0,
+        "altitude": 0
+      },
+      {
+        "name": "s_snowball_machine",
+        "x": 4,
+        "y": 12,
+        "direction": 0,
+        "altitude": 0
+      },
+      {
+        "name": "snst_fence",
+        "x": 18,
+        "y": 9,
+        "direction": 2,
+        "altitude": 0
+      },
+      {
+        "name": "snst_iceblock",
+        "x": 14,
+        "y": 12,
+        "direction": 0,
+        "altitude": 0
+      },
+      {
+        "name": "snst_iceblock",
+        "x": 14,
+        "y": 12,
+        "direction": 0,
+        "altitude": 1760
+      },
+      {
+        "name": "ads_igorraygun",
+        "x": 20,
+        "y": 6,
+        "direction": 6,
+        "altitude": 0
+      },
+      {
+        "name": "xm09_man_a",
+        "x": 8,
+        "y": 14,
+        "direction": 0,
+        "altitude": 0
+      },
+      {
+        "name": "snst_tree1_d",
+        "x": 11,
+        "y": 3,
+        "direction": 4,
+        "altitude": 0
+      }
+    ],
+    "teamSpawns": [
+      [
+        {
+          "x": 3,
+          "y": 3
+        },
+        {
+          "x": 4,
+          "y": 3
+        }
+      ],
+      [
+        {
+          "x": 19,
+          "y": 12
+        },
+        {
+          "x": 20,
+          "y": 12
+        }
+      ]
+    ],
+    "backdrop": {
+      "imageUrl": "/c_images/snowstorm_client/official/snst_bg_1_a_big.png",
+      "x": 2,
+      "y": 15,
+      "offsetX": -100,
+      "offsetY": 40,
+      "offsetZ": 0
+    }
+  },
+  "humans": [
+    {
+      "userId": 1,
+      "name": "Alba",
+      "mission": "",
+      "figure": "hd-180-1",
+      "gender": "F",
+      "team": 1
+    },
+    {
+      "userId": 2,
+      "name": "Brune",
+      "mission": "go",
+      "figure": "hd-190-2",
+      "gender": "F",
+      "team": 1
+    },
+    {
+      "userId": 3,
+      "name": "Corto",
+      "mission": "",
+      "figure": "hd-200-3",
+      "gender": "M",
+      "team": 2
+    },
+    {
+      "userId": 4,
+      "name": "Dario",
+      "mission": "!",
+      "figure": "hd-205-4",
+      "gender": "M",
+      "team": 2
+    }
+  ],
+  "inputs": [
+    {
+      "atTurn": 0,
+      "human": 0,
+      "input": "MoveTarget",
+      "values": [
+        25600,
+        9600
+      ],
+      "turn": 1,
+      "subturn": 0
+    },
+    {
+      "atTurn": 0,
+      "human": 1,
+      "input": "MoveTarget",
+      "values": [
+        12800,
+        25600
+      ],
+      "turn": 1,
+      "subturn": 1
+    },
+    {
+      "atTurn": 0,
+      "human": 2,
+      "input": "MoveTarget",
+      "values": [
+        51200,
+        38400
+      ],
+      "turn": 1,
+      "subturn": 2
+    },
+    {
+      "atTurn": 0,
+      "human": 3,
+      "input": "MoveTarget",
+      "values": [
+        57600,
+        12800
+      ],
+      "turn": 1,
+      "subturn": 0
+    },
+    {
+      "atTurn": 2,
+      "human": 0,
+      "input": "ThrowAtHuman",
+      "target": 2,
+      "values": [
+        3
+      ],
+      "turn": 3,
+      "subturn": 0
+    },
+    {
+      "atTurn": 3,
+      "human": 2,
+      "input": "ThrowAtPosition",
+      "values": [
+        9600,
+        9600,
+        2
+      ],
+      "turn": 4,
+      "subturn": 1
+    },
+    {
+      "atTurn": 5,
+      "human": 1,
+      "input": "MakeSnowball",
+      "values": [],
+      "turn": 6,
+      "subturn": 0,
+      "count": 1
+    },
+    {
+      "atTurn": 6,
+      "human": 3,
+      "input": "ThrowAtHuman",
+      "target": 0,
+      "values": [
+        0
+      ],
+      "turn": 7,
+      "subturn": 2
+    },
+    {
+      "atTurn": 8,
+      "human": 0,
+      "input": "ThrowAtPosition",
+      "values": [
+        -50000,
+        999999,
+        0
+      ],
+      "turn": 9,
+      "subturn": 0
+    },
+    {
+      "atTurn": 10,
+      "human": 1,
+      "input": "ThrowAtPosition",
+      "values": [
+        32000,
+        32000,
+        0
+      ],
+      "turn": 11,
+      "subturn": 0
+    },
+    {
+      "atTurn": 12,
+      "human": 0,
+      "input": "MakeSnowball",
+      "values": [],
+      "turn": 13,
+      "subturn": 0,
+      "count": 50
+    },
+    {
+      "atTurn": 14,
+      "human": 2,
+      "input": "MoveTarget",
+      "values": [
+        38400,
+        22400
+      ],
+      "turn": 15,
+      "subturn": 0
+    },
+    {
+      "atTurn": 15,
+      "human": 3,
+      "input": "MoveTarget",
+      "values": [
+        70400,
+        19200
+      ],
+      "turn": 16,
+      "subturn": 0
+    },
+    {
+      "atTurn": 18,
+      "human": 1,
+      "input": "MoveTarget",
+      "values": [
+        12800,
+        41600
+      ],
+      "turn": 19,
+      "subturn": 1
+    },
+    {
+      "atTurn": 20,
+      "human": 2,
+      "input": "ThrowAtHuman",
+      "target": 1,
+      "values": [
+        1
+      ],
+      "turn": 21,
+      "subturn": 0
+    },
+    {
+      "atTurn": 22,
+      "human": 0,
+      "input": "ThrowAtHuman",
+      "target": 3,
+      "values": [
+        3
+      ],
+      "turn": 23,
+      "subturn": 2
+    },
+    {
+      "atTurn": 25,
+      "human": 1,
+      "input": "ThrowAtPosition",
+      "values": [
+        51200,
+        12800,
+        0
+      ],
+      "turn": 26,
+      "subturn": 0
+    },
+    {
+      "atTurn": 26,
+      "human": 1,
+      "input": "MoveTarget",
+      "values": [
+        48000,
+        9600
+      ],
+      "turn": 27,
+      "subturn": 0
+    },
+    {
+      "atTurn": 30,
+      "human": 2,
+      "input": "ThrowAtHuman",
+      "target": 0,
+      "values": [
+        0
+      ],
+      "turn": 29,
+      "subturn": 0
+    },
+    {
+      "atTurn": 32,
+      "human": 3,
+      "input": "ThrowAtHuman",
+      "target": 1,
+      "values": [
+        2
+      ],
+      "turn": 40,
+      "subturn": 0
+    },
+    {
+      "atTurn": 35,
+      "human": 0,
+      "input": "MoveTarget",
+      "values": [
+        38400,
+        6400
+      ],
+      "turn": 36,
+      "subturn": 0
+    },
+    {
+      "atTurn": 35,
+      "human": 0,
+      "input": "MoveTarget",
+      "values": [
+        41600,
+        6400
+      ],
+      "turn": 36,
+      "subturn": 1
+    },
+    {
+      "atTurn": 40,
+      "human": 0,
+      "input": "ThrowAtHuman",
+      "target": 2,
+      "values": [
+        3
+      ],
+      "turn": 41,
+      "subturn": 0
+    },
+    {
+      "atTurn": 40,
+      "human": 2,
+      "input": "ThrowAtHuman",
+      "target": 0,
+      "values": [
+        3
+      ],
+      "turn": 41,
+      "subturn": 1
+    },
+    {
+      "atTurn": 40,
+      "human": 1,
+      "input": "ThrowAtHuman",
+      "target": 3,
+      "values": [
+        0
+      ],
+      "turn": 41,
+      "subturn": 2
+    },
+    {
+      "atTurn": 40,
+      "human": 3,
+      "input": "ThrowAtHuman",
+      "target": 1,
+      "values": [
+        0
+      ],
+      "turn": 41,
+      "subturn": 0
+    },
+    {
+      "atTurn": 44,
+      "human": 0,
+      "input": "ThrowAtHuman",
+      "target": 2,
+      "values": [
+        3
+      ],
+      "turn": 45,
+      "subturn": 0
+    },
+    {
+      "atTurn": 44,
+      "human": 2,
+      "input": "ThrowAtHuman",
+      "target": 0,
+      "values": [
+        3
+      ],
+      "turn": 45,
+      "subturn": 1
+    },
+    {
+      "atTurn": 44,
+      "human": 1,
+      "input": "ThrowAtHuman",
+      "target": 3,
+      "values": [
+        0
+      ],
+      "turn": 45,
+      "subturn": 2
+    },
+    {
+      "atTurn": 44,
+      "human": 3,
+      "input": "ThrowAtHuman",
+      "target": 1,
+      "values": [
+        0
+      ],
+      "turn": 45,
+      "subturn": 0
+    },
+    {
+      "atTurn": 48,
+      "human": 0,
+      "input": "ThrowAtHuman",
+      "target": 2,
+      "values": [
+        3
+      ],
+      "turn": 49,
+      "subturn": 0
+    },
+    {
+      "atTurn": 48,
+      "human": 2,
+      "input": "ThrowAtHuman",
+      "target": 0,
+      "values": [
+        3
+      ],
+      "turn": 49,
+      "subturn": 1
+    },
+    {
+      "atTurn": 48,
+      "human": 1,
+      "input": "ThrowAtHuman",
+      "target": 3,
+      "values": [
+        0
+      ],
+      "turn": 49,
+      "subturn": 2
+    },
+    {
+      "atTurn": 48,
+      "human": 3,
+      "input": "ThrowAtHuman",
+      "target": 1,
+      "values": [
+        0
+      ],
+      "turn": 49,
+      "subturn": 0
+    },
+    {
+      "atTurn": 52,
+      "human": 0,
+      "input": "ThrowAtHuman",
+      "target": 2,
+      "values": [
+        3
+      ],
+      "turn": 53,
+      "subturn": 0
+    },
+    {
+      "atTurn": 52,
+      "human": 2,
+      "input": "ThrowAtHuman",
+      "target": 0,
+      "values": [
+        3
+      ],
+      "turn": 53,
+      "subturn": 1
+    },
+    {
+      "atTurn": 52,
+      "human": 1,
+      "input": "ThrowAtHuman",
+      "target": 3,
+      "values": [
+        0
+      ],
+      "turn": 53,
+      "subturn": 2
+    },
+    {
+      "atTurn": 52,
+      "human": 3,
+      "input": "ThrowAtHuman",
+      "target": 1,
+      "values": [
+        0
+      ],
+      "turn": 53,
+      "subturn": 0
+    },
+    {
+      "atTurn": 56,
+      "human": 0,
+      "input": "ThrowAtHuman",
+      "target": 2,
+      "values": [
+        3
+      ],
+      "turn": 57,
+      "subturn": 0
+    },
+    {
+      "atTurn": 56,
+      "human": 2,
+      "input": "ThrowAtHuman",
+      "target": 0,
+      "values": [
+        3
+      ],
+      "turn": 57,
+      "subturn": 1
+    },
+    {
+      "atTurn": 56,
+      "human": 1,
+      "input": "ThrowAtHuman",
+      "target": 3,
+      "values": [
+        0
+      ],
+      "turn": 57,
+      "subturn": 2
+    },
+    {
+      "atTurn": 56,
+      "human": 3,
+      "input": "ThrowAtHuman",
+      "target": 1,
+      "values": [
+        0
+      ],
+      "turn": 57,
+      "subturn": 0
+    },
+    {
+      "atTurn": 60,
+      "human": 2,
+      "input": "MakeSnowball",
+      "values": [],
+      "turn": 61,
+      "subturn": 0,
+      "count": 1
+    },
+    {
+      "atTurn": 60,
+      "human": 3,
+      "input": "MakeSnowball",
+      "values": [],
+      "turn": 61,
+      "subturn": 1,
+      "count": 1
+    },
+    {
+      "atTurn": 62,
+      "human": 0,
+      "input": "MoveTarget",
+      "values": [
+        51200,
+        12800
+      ],
+      "turn": 63,
+      "subturn": 0
+    },
+    {
+      "atTurn": 70,
+      "human": 1,
+      "input": "MoveTarget",
+      "values": [
+        16000,
+        16000
+      ],
+      "turn": 71,
+      "subturn": 2
+    },
+    {
+      "atTurn": 80,
+      "human": 0,
+      "input": "MoveTarget",
+      "values": [
+        9600,
+        9600
+      ],
+      "turn": 81,
+      "subturn": 7
+    },
+    {
+      "atTurn": 80,
+      "human": 3,
+      "input": "MoveTarget",
+      "values": [
+        9600
+      ],
+      "turn": 81,
+      "subturn": 0
+    },
+    {
+      "atTurn": 84,
+      "human": 1,
+      "input": "ThrowAtHuman",
+      "target": 1,
+      "values": [
+        0
+      ],
+      "turn": 85,
+      "subturn": 0
+    },
+    {
+      "atTurn": 86,
+      "human": 0,
+      "input": "MoveTarget",
+      "values": [
+        64000,
+        38400
+      ],
+      "turn": 87,
+      "subturn": 0
+    },
+    {
+      "atTurn": 90,
+      "human": 2,
+      "input": "ThrowAtHuman",
+      "target": 0,
+      "values": [
+        0
+      ],
+      "turn": 91,
+      "subturn": 0
+    },
+    {
+      "atTurn": 90,
+      "human": 0,
+      "input": "ThrowAtPosition",
+      "values": [
+        60800,
+        38400,
+        1
+      ],
+      "turn": 91,
+      "subturn": 2
+    },
+    {
+      "atTurn": 90,
+      "human": 3,
+      "input": "MakeSnowball",
+      "values": [],
+      "turn": 91,
+      "subturn": 1,
+      "count": 1
+    },
+    {
+      "atTurn": 95,
+      "human": 2,
+      "input": "ThrowAtHuman",
+      "target": 0,
+      "values": [
+        0
+      ],
+      "turn": 96,
+      "subturn": 0
+    },
+    {
+      "atTurn": 95,
+      "human": 0,
+      "input": "ThrowAtPosition",
+      "values": [
+        60800,
+        38400,
+        1
+      ],
+      "turn": 96,
+      "subturn": 2
+    },
+    {
+      "atTurn": 95,
+      "human": 3,
+      "input": "MakeSnowball",
+      "values": [],
+      "turn": 96,
+      "subturn": 1,
+      "count": 1
+    },
+    {
+      "atTurn": 100,
+      "human": 1,
+      "input": "Leave",
+      "values": [],
+      "turn": 0,
+      "subturn": 0
+    },
+    {
+      "atTurn": 101,
+      "human": 1,
+      "input": "MoveTarget",
+      "values": [
+        19200,
+        19200
+      ],
+      "turn": 102,
+      "subturn": 0
+    },
+    {
+      "atTurn": 102,
+      "human": 3,
+      "input": "ThrowAtHuman",
+      "target": 1,
+      "values": [
+        0
+      ],
+      "turn": 103,
+      "subturn": 0
+    },
+    {
+      "atTurn": 105,
+      "human": 2,
+      "input": "ThrowAtHuman",
+      "target": 0,
+      "values": [
+        0
+      ],
+      "turn": 106,
+      "subturn": 0
+    },
+    {
+      "atTurn": 105,
+      "human": 0,
+      "input": "ThrowAtPosition",
+      "values": [
+        60800,
+        38400,
+        1
+      ],
+      "turn": 106,
+      "subturn": 2
+    },
+    {
+      "atTurn": 105,
+      "human": 3,
+      "input": "MakeSnowball",
+      "values": [],
+      "turn": 106,
+      "subturn": 1,
+      "count": 1
+    },
+    {
+      "atTurn": 110,
+      "human": 2,
+      "input": "ThrowAtHuman",
+      "target": 0,
+      "values": [
+        0
+      ],
+      "turn": 111,
+      "subturn": 0
+    },
+    {
+      "atTurn": 110,
+      "human": 0,
+      "input": "ThrowAtPosition",
+      "values": [
+        60800,
+        38400,
+        1
+      ],
+      "turn": 111,
+      "subturn": 2
+    },
+    {
+      "atTurn": 110,
+      "human": 3,
+      "input": "MakeSnowball",
+      "values": [],
+      "turn": 111,
+      "subturn": 1,
+      "count": 1
+    }
+  ]
+}

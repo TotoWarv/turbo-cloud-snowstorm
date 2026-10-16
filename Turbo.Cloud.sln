@@ -65,6 +65,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Turbo.Gamedata", "Turbo.Gam
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Turbo.Assets", "Turbo.Assets\Turbo.Assets.csproj", "{2AD78068-7559-476B-98E1-1666204C7454}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Turbo.Games", "Turbo.Games\Turbo.Games.csproj", "{C16DCBC2-A6AC-4680-BDEB-D385FA7CB0B3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -447,6 +449,18 @@ Global
 		{2AD78068-7559-476B-98E1-1666204C7454}.Release|x64.Build.0 = Release|Any CPU
 		{2AD78068-7559-476B-98E1-1666204C7454}.Release|x86.ActiveCfg = Release|Any CPU
 		{2AD78068-7559-476B-98E1-1666204C7454}.Release|x86.Build.0 = Release|Any CPU
+		{C16DCBC2-A6AC-4680-BDEB-D385FA7CB0B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C16DCBC2-A6AC-4680-BDEB-D385FA7CB0B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C16DCBC2-A6AC-4680-BDEB-D385FA7CB0B3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C16DCBC2-A6AC-4680-BDEB-D385FA7CB0B3}.Debug|x64.Build.0 = Debug|Any CPU
+		{C16DCBC2-A6AC-4680-BDEB-D385FA7CB0B3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C16DCBC2-A6AC-4680-BDEB-D385FA7CB0B3}.Debug|x86.Build.0 = Debug|Any CPU
+		{C16DCBC2-A6AC-4680-BDEB-D385FA7CB0B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C16DCBC2-A6AC-4680-BDEB-D385FA7CB0B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C16DCBC2-A6AC-4680-BDEB-D385FA7CB0B3}.Release|x64.ActiveCfg = Release|Any CPU
+		{C16DCBC2-A6AC-4680-BDEB-D385FA7CB0B3}.Release|x64.Build.0 = Release|Any CPU
+		{C16DCBC2-A6AC-4680-BDEB-D385FA7CB0B3}.Release|x86.ActiveCfg = Release|Any CPU
+		{C16DCBC2-A6AC-4680-BDEB-D385FA7CB0B3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
