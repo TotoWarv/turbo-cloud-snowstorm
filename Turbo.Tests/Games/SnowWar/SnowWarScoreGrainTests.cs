@@ -1,6 +1,8 @@
 using System.Reflection;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Orleans;
 using Turbo.Database.Entities.Game;
 using Turbo.Database.Entities.Players;
 using Turbo.Games;
@@ -30,12 +32,24 @@ public sealed class SnowWarScoreGrainTests
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
-    private ISnowWarScoreGrain NewGrain(SnowWarConfig? config = null)
+    private ISnowWarScoreGrain NewGrain(
+        SnowWarConfig? config = null,
+        IDbContextFactory<Turbo.Database.Context.TurboDbContext>? db = null,
+        CapturingLogger<ISnowWarScoreGrain>? logger = null
+    )
     {
-        var grain = GrainHarness.Create(typeof(GamesModule).Assembly, GRAIN_TYPE, _fakes, _db);
+        var grain = GrainHarness.Create(
+            typeof(GamesModule).Assembly,
+            GRAIN_TYPE,
+            _fakes,
+            db ?? _db
+        );
 
         RoomHarness.SetField(grain, "_time", _clock);
         RoomHarness.SetField(grain, "_config", config ?? new SnowWarConfig());
+
+        if (logger is not null)
+            RoomHarness.SetField(grain, "_logger", logger);
 
         return (ISnowWarScoreGrain)grain;
     }
@@ -332,29 +346,243 @@ public sealed class SnowWarScoreGrainTests
     [Fact]
     public async Task a_failed_flush_keeps_the_scores_for_the_next_one()
     {
-        var failing = new FailingDb();
-        var grain = GrainHarness.Create(typeof(GamesModule).Assembly, GRAIN_TYPE, _fakes, failing);
-        RoomHarness.SetField(grain, "_time", _clock);
-        RoomHarness.SetField(grain, "_config", new SnowWarConfig());
-        var scores = (ISnowWarScoreGrain)grain;
+        var db = new ObservedDb { Fail = true };
+        var scores = NewGrain(db: db);
 
         await scores.AddAsync([Score(1, 10)], Ct);
         await FlushAsync(scores);
 
-        failing.Fail = false;
+        db.Fail = false;
         await FlushAsync(scores);
 
-        using var ctx = failing.CreateDbContext();
+        using var ctx = db.CreateDbContext();
         (await ctx.SnowWarScores.SingleAsync(Ct)).Score.Should().Be(10);
     }
 
-    private sealed class FailingDb : IDbContextFactory<Turbo.Database.Context.TurboDbContext>
+    [Fact]
+    public async Task repeated_totals_of_one_player_query_the_database_once()
     {
-        private readonly InMemoryDb _inner = new();
+        var db = new ObservedDb();
+        var scores = NewGrain(db: db);
 
-        public bool Fail { get; set; } = true;
+        for (var call = 0; call < 100; call++)
+            await scores.GetPlayerTotalsAsync(1, Ct);
 
-        public Turbo.Database.Context.TurboDbContext CreateDbContext() =>
-            Fail ? throw new InvalidOperationException("database down") : _inner.CreateDbContext();
+        db.Created.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task totals_show_a_finished_game_before_it_is_written()
+    {
+        var db = new ObservedDb();
+        var scores = NewGrain(db: db);
+
+        (await scores.GetPlayerTotalsAsync(1, Ct)).TotalScore.Should().Be(0);
+
+        await scores.AddAsync([Score(1, 60)], Ct);
+
+        var totals = await scores.GetPlayerTotalsAsync(1, Ct);
+
+        totals.TotalScore.Should().Be(60);
+        totals.GamesPlayed.Should().Be(1);
+        totals.SkillLevel.Should().Be(2);
+        db.Created.Should().Be(1);
+
+        await FlushAsync(scores);
+
+        (await scores.GetPlayerTotalsAsync(1, Ct)).TotalScore.Should().Be(60);
+        (await scores.GetPlayerTotalsAsync(1, Ct)).GamesPlayed.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task cached_totals_expire_after_the_configured_time()
+    {
+        var db = new ObservedDb();
+        var config = new SnowWarConfig();
+        var scores = NewGrain(config, db);
+
+        await scores.GetPlayerTotalsAsync(1, Ct);
+        _clock.Advance(TimeSpan.FromSeconds(config.PlayerTotalsCacheSeconds));
+        await scores.GetPlayerTotalsAsync(1, Ct);
+
+        db.Created.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task many_players_asking_for_the_same_board_scan_the_scores_once()
+    {
+        AddPlayers(1, 30);
+        var db = new ObservedDb(_db);
+        var scores = NewGrain(db: db);
+
+        await scores.AddAsync([.. Enumerable.Range(1, 30).Select(id => Score(id, id))], Ct);
+        await scores.GetWeeklyAsync(Request(playerId: 1), 0, Ct);
+        await scores.GetTotalAsync(Request(playerId: 1), Ct);
+
+        var afterFirst = db.Created;
+
+        for (var id = 2; id <= 30; id++)
+        {
+            var weekly = await scores.GetWeeklyAsync(Request(playerId: id), 0, Ct);
+            var total = await scores.GetTotalAsync(Request(playerId: id), Ct);
+
+            weekly!.Page.Entries.Select(e => e.UserId).Should().StartWith([30, 29, 28]);
+            total!.Entries[0].Name.Should().Be("player30");
+        }
+
+        db.Created.Should().Be(afterFirst);
+    }
+
+    [Fact]
+    public async Task a_flush_refreshes_the_cached_boards()
+    {
+        AddPlayers(1, 2);
+        var scores = NewGrain();
+
+        await scores.AddAsync([Score(1, 5)], Ct);
+        (await scores.GetTotalAsync(Request(playerId: 1), Ct))!
+            .Entries.Select(e => e.UserId)
+            .Should()
+            .Equal(1);
+
+        await scores.AddAsync([Score(2, 9)], Ct);
+
+        (await scores.GetTotalAsync(Request(playerId: 2), Ct))!
+            .Entries.Select(e => (e.UserId, e.Rank))
+            .Should()
+            .Equal((2, 1), (1, 2));
+    }
+
+    [Fact]
+    public async Task cached_boards_keep_shared_ranks_for_ties()
+    {
+        AddPlayers(1, 3);
+        var scores = NewGrain();
+
+        await scores.AddAsync([Score(1, 7), Score(2, 7), Score(3, 2)], Ct);
+        await scores.GetTotalAsync(Request(playerId: 1), Ct);
+
+        (await scores.GetTotalAsync(Request(playerId: 2), Ct))!
+            .Entries.Select(e => e.Rank)
+            .Should()
+            .Equal(1, 1, 3);
+    }
+
+    [Fact]
+    public async Task hostile_page_sizes_and_ranks_stay_within_bounds()
+    {
+        AddPlayers(1, 60);
+        var scores = NewGrain();
+
+        await scores.AddAsync([.. Enumerable.Range(1, 60).Select(id => Score(id, 1000 - id))], Ct);
+
+        var lowest = await scores.GetTotalAsync(
+            Request(
+                playerId: 1,
+                startRank: int.MinValue,
+                viewSize: int.MaxValue,
+                windowSize: int.MaxValue
+            ),
+            Ct
+        );
+        var centred = await scores.GetTotalAsync(
+            Request(playerId: 30, startRank: -1, viewSize: int.MaxValue, windowSize: int.MinValue),
+            Ct
+        );
+        var beyond = await scores.GetTotalAsync(
+            Request(playerId: 2, startRank: int.MaxValue, viewSize: int.MaxValue, windowSize: 0),
+            Ct
+        );
+
+        lowest!.Entries.Select(e => e.Rank).Should().Equal(Enumerable.Range(1, 50));
+        centred!.Entries.Select(e => e.Rank).Should().Equal(Enumerable.Range(1, 50));
+        beyond!.Entries.Should().BeEmpty();
+        beyond.TotalListSize.Should().Be(60);
+    }
+
+    [Fact]
+    public async Task deactivation_writes_what_is_still_queued()
+    {
+        var scores = NewGrain();
+
+        await scores.AddAsync([Score(1, 10)], Ct);
+        await ((Grain)scores).OnDeactivateAsync(Deactivation(), Ct);
+
+        using var ctx = _db.CreateDbContext();
+        (await ctx.SnowWarScores.SingleAsync(Ct)).Score.Should().Be(10);
+    }
+
+    [Fact]
+    public async Task deactivation_ignores_a_cancelled_token_and_says_when_scores_are_lost()
+    {
+        var logger = new CapturingLogger<ISnowWarScoreGrain>();
+        var db = new ObservedDb();
+        var scores = NewGrain(db: db, logger: logger);
+        using var cancelled = new CancellationTokenSource();
+
+        await scores.AddAsync([Score(1, 10)], Ct);
+        await cancelled.CancelAsync();
+        await ((Grain)scores).OnDeactivateAsync(Deactivation(), cancelled.Token);
+
+        using (var ctx = db.CreateDbContext())
+            (await ctx.SnowWarScores.SingleAsync(Ct)).Score.Should().Be(10);
+
+        var failing = new ObservedDb { Fail = true };
+        var lost = NewGrain(db: failing, logger: logger);
+
+        await lost.AddAsync([Score(2, 3)], Ct);
+        await ((Grain)lost).OnDeactivateAsync(Deactivation(), Ct);
+
+        logger
+            .AtLeast(LogLevel.Error)
+            .Should()
+            .ContainSingle()
+            .Which.Message.Should()
+            .Contain("lost")
+            .And.NotContain("stay queued");
+    }
+
+    [Fact]
+    public async Task an_overflowing_queue_keeps_the_newest_scores_and_logs_once()
+    {
+        var logger = new CapturingLogger<ISnowWarScoreGrain>();
+        var scores = NewGrain(new SnowWarConfig { MaxPendingScores = 2 }, logger: logger);
+
+        await scores.AddAsync([.. Enumerable.Range(1, 5).Select(id => Score(id, id))], Ct);
+        await FlushAsync(scores);
+
+        using var ctx = _db.CreateDbContext();
+        (await ctx.SnowWarScores.Select(s => s.PlayerId).OrderBy(id => id).ToListAsync(Ct))
+            .Should()
+            .Equal(4, 5);
+        logger
+            .AtLeast(LogLevel.Warning)
+            .Should()
+            .ContainSingle()
+            .Which.Message.Should()
+            .Contain("3");
+    }
+
+    private static DeactivationReason Deactivation() =>
+        new(DeactivationReasonCode.ShuttingDown, "test");
+
+    private sealed class ObservedDb(InMemoryDb? inner = null)
+        : IDbContextFactory<Turbo.Database.Context.TurboDbContext>
+    {
+        private readonly InMemoryDb _inner = inner ?? new InMemoryDb();
+
+        public bool Fail { get; set; }
+
+        public int Created { get; private set; }
+
+        public Turbo.Database.Context.TurboDbContext CreateDbContext()
+        {
+            if (Fail)
+                throw new InvalidOperationException("database down");
+
+            Created++;
+
+            return _inner.CreateDbContext();
+        }
     }
 }

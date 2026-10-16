@@ -73,6 +73,8 @@ public sealed class SnowWarConfigTests : IDisposable
         config.LeaderboardRequestIntervalMilliseconds.Should().Be(1000);
         config.ScoreFlushIntervalSeconds.Should().Be(5);
         config.MaxPendingScores.Should().Be(10000);
+        config.PlayerTotalsCacheSeconds.Should().Be(30);
+        config.LeaderboardCacheSeconds.Should().Be(10);
         config
             .Backdrops.Should()
             .BeEquivalentTo(
