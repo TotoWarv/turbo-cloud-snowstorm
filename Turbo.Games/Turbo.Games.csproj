@@ -6,6 +6,16 @@
     <InternalsVisibleTo Include="Turbo.Tests" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource
+      Include="SnowWar\Arenas\*.json"
+      LogicalName="Turbo.Games.SnowWar.Arenas.%(Filename)%(Extension)"
+    />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Turbo.Contracts\Turbo.Contracts.csproj" />
     <ProjectReference Include="..\Turbo.Primitives\Turbo.Primitives.csproj" />
   </ItemGroup>
 </Project>
