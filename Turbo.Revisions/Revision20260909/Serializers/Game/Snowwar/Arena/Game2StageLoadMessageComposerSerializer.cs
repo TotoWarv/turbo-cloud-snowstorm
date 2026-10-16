@@ -8,6 +8,6 @@ internal class Game2StageLoadMessageComposerSerializer(int header)
 {
     protected override void Serialize(IServerPacket packet, Game2StageLoadMessageComposer message)
     {
-        //
+        packet.WriteInteger(message.GameType);
     }
 }

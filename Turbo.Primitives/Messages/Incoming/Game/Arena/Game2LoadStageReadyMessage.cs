@@ -2,4 +2,7 @@ using Turbo.Primitives.Networking;
 
 namespace Turbo.Primitives.Messages.Incoming.Game.Arena;
 
-public record Game2LoadStageReadyMessage : IMessageEvent { }
+public record Game2LoadStageReadyMessage : IMessageEvent
+{
+    public required int Percentage { get; init; }
+}

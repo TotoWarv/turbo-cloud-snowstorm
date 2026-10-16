@@ -1,4 +1,5 @@
 using Orleans;
+using Turbo.Primitives.Game.Enums;
 using Turbo.Primitives.Networking;
 
 namespace Turbo.Primitives.Messages.Outgoing.Game.Snowwar.Arena;
@@ -6,5 +7,6 @@ namespace Turbo.Primitives.Messages.Outgoing.Game.Snowwar.Arena;
 [GenerateSerializer, Immutable]
 public sealed record Game2EnterArenaFailedMessageComposer : IComposer
 {
-    // TODO: add properties if/when identified
+    [Id(0)]
+    public required SnowWarEnterArenaFailureReason Reason { get; init; }
 }

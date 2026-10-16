@@ -11,6 +11,6 @@ internal class Game2StageRunningMessageComposerSerializer(int header)
         Game2StageRunningMessageComposer message
     )
     {
-        //
+        packet.WriteInteger(message.TimeToStageEnd);
     }
 }

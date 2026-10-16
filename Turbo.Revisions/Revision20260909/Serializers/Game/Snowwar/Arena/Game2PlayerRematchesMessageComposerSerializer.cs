@@ -11,6 +11,6 @@ internal class Game2PlayerRematchesMessageComposerSerializer(int header)
         Game2PlayerRematchesMessageComposer message
     )
     {
-        //
+        packet.WriteInteger(message.UserId);
     }
 }

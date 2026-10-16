@@ -11,6 +11,6 @@ internal class Game2GameChatFromPlayerMessageComposerSerializer(int header)
         Game2GameChatFromPlayerMessageComposer message
     )
     {
-        //
+        packet.WriteInteger(message.UserId).WriteString(message.Message);
     }
 }

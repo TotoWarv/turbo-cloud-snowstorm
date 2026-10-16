@@ -9,8 +9,5 @@ internal class Game2GameNotFoundMessageMessageComposerSerializer(int header)
     protected override void Serialize(
         IServerPacket packet,
         Game2GameNotFoundMessageMessageComposer message
-    )
-    {
-        //
-    }
+    ) { }
 }

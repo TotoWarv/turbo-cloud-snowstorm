@@ -14,6 +14,10 @@
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Protocol\Fixtures\achievements.json" />
+    <EmbeddedResource
+      Include="Protocol\Fixtures\snowwar\*.hex"
+      LogicalName="Protocol.Fixtures.snowwar.%(Filename)%(Extension)"
+    />
     <!-- The built-in variables as hhus describes them (WIN63-202610121709). -->
     <EmbeddedResource
       Include="Rooms\Fixtures\*.json"

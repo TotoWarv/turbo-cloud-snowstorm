@@ -8,6 +8,6 @@ internal class Game2StageEndingMessageComposerSerializer(int header)
 {
     protected override void Serialize(IServerPacket packet, Game2StageEndingMessageComposer message)
     {
-        //
+        packet.WriteInteger(message.TimeToNextState);
     }
 }

@@ -6,5 +6,12 @@ namespace Turbo.Revisions.Revision20260909.Parsers.Game.Ingame;
 
 internal class Game2ThrowSnowballAtHumanMessageParser : IParser
 {
-    public IMessageEvent Parse(IClientPacket packet) => new Game2ThrowSnowballAtHumanMessage();
+    public IMessageEvent Parse(IClientPacket packet) =>
+        new Game2ThrowSnowballAtHumanMessage
+        {
+            TargetHumanId = packet.PopInt(),
+            Trajectory = packet.PopInt(),
+            Turn = packet.PopInt(),
+            Subturn = packet.PopInt(),
+        };
 }
