@@ -1,4 +1,5 @@
 using Orleans;
+using Turbo.Primitives.Game.Snapshots;
 using Turbo.Primitives.Networking;
 
 namespace Turbo.Primitives.Messages.Outgoing.Game.Snowwar.Arena;
@@ -6,5 +7,6 @@ namespace Turbo.Primitives.Messages.Outgoing.Game.Snowwar.Arena;
 [GenerateSerializer, Immutable]
 public sealed record Game2ArenaEnteredMessageComposer : IComposer
 {
-    // TODO: add properties if/when identified
+    [Id(0)]
+    public required SnowWarArenaPlayerSnapshot Player { get; init; }
 }

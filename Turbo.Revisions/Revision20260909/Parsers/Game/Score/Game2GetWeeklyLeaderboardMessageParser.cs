@@ -6,5 +6,14 @@ namespace Turbo.Revisions.Revision20260909.Parsers.Game.Score;
 
 internal class Game2GetWeeklyLeaderboardMessageParser : IParser
 {
-    public IMessageEvent Parse(IClientPacket packet) => new Game2GetWeeklyLeaderboardMessage();
+    public IMessageEvent Parse(IClientPacket packet) =>
+        new Game2GetWeeklyLeaderboardMessage
+        {
+            GameTypeId = packet.PopInt(),
+            WeekOffset = packet.PopInt(),
+            StartRank = packet.PopInt(),
+            Direction = packet.PopInt(),
+            ViewSize = packet.PopInt(),
+            WindowSize = packet.PopInt(),
+        };
 }

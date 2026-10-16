@@ -8,6 +8,6 @@ internal class Game2GameRejoinMessageComposerSerializer(int header)
 {
     protected override void Serialize(IServerPacket packet, Game2GameRejoinMessageComposer message)
     {
-        //
+        packet.WriteInteger(message.RoomId);
     }
 }

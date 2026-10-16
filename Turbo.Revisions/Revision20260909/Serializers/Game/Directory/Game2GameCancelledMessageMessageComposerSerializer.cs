@@ -9,8 +9,5 @@ internal class Game2GameCancelledMessageMessageComposerSerializer(int header)
     protected override void Serialize(
         IServerPacket packet,
         Game2GameCancelledMessageMessageComposer message
-    )
-    {
-        //
-    }
+    ) { }
 }

@@ -6,5 +6,6 @@ namespace Turbo.Revisions.Revision20260909.Parsers.Game.Arena;
 
 internal class Game2GameChatMessageParser : IParser
 {
-    public IMessageEvent Parse(IClientPacket packet) => new Game2GameChatMessage();
+    public IMessageEvent Parse(IClientPacket packet) =>
+        new Game2GameChatMessage { Message = packet.PopString() };
 }

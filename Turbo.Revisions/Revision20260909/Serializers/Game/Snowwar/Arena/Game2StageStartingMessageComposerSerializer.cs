@@ -1,5 +1,6 @@
 using Turbo.Primitives.Messages.Outgoing.Game.Snowwar.Arena;
 using Turbo.Primitives.Packets;
+using Turbo.Revisions.Revision20260909.Serializers.Game.Data;
 
 namespace Turbo.Revisions.Revision20260909.Serializers.Game.Snowwar.Arena;
 
@@ -11,6 +12,11 @@ internal class Game2StageStartingMessageComposerSerializer(int header)
         Game2StageStartingMessageComposer message
     )
     {
-        //
+        packet
+            .WriteInteger(message.GameType)
+            .WriteString(message.RoomType)
+            .WriteInteger(message.CountDown);
+
+        SnowWarGameObjectSnapshotSerializer.Serialize(packet, message.Objects);
     }
 }

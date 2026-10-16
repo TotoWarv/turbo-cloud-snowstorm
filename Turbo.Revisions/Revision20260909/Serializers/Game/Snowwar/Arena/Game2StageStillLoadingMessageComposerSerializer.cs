@@ -11,6 +11,11 @@ internal class Game2StageStillLoadingMessageComposerSerializer(int header)
         Game2StageStillLoadingMessageComposer message
     )
     {
-        //
+        packet.WriteInteger(message.Percentage).WriteInteger(message.FinishedUserIds.Length);
+
+        foreach (var userId in message.FinishedUserIds)
+        {
+            packet.WriteInteger(userId);
+        }
     }
 }

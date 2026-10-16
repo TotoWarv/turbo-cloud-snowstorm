@@ -11,6 +11,16 @@ internal class SnowWarGameTokensMessageMessageComposerSerializer(int header)
         SnowWarGameTokensMessageMessageComposer message
     )
     {
-        //
+        packet.WriteInteger(message.Offers.Length);
+
+        foreach (var offer in message.Offers)
+        {
+            packet
+                .WriteInteger(offer.Id)
+                .WriteString(offer.LocalizationId)
+                .WriteInteger(offer.PriceCredits)
+                .WriteInteger(offer.PricePoints)
+                .WriteInteger(offer.PointsType);
+        }
     }
 }
