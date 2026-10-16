@@ -3,12 +3,14 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Turbo.Games.SnowWar.Game;
 using Turbo.Games.SnowWar.Simulation;
 using Turbo.Primitives.Game.Enums;
 using Turbo.Primitives.Game.Snapshots;
 using Turbo.Primitives.Messages.Outgoing.Game.Snowwar.Arena;
 using Turbo.Primitives.Messages.Outgoing.Game.Snowwar.Ingame;
+using Turbo.Primitives.Orleans;
 
 namespace Turbo.Games.Grains;
 
@@ -142,7 +144,33 @@ internal sealed partial class SnowWarGameGrain
             ct
         );
         await SendAsync(PresentIds, Results(), ct);
+        await RecordScoresAsync(ct);
         await ReportFinishedAsync(ct);
+    }
+
+    private async Task RecordScoresAsync(CancellationToken ct)
+    {
+        ImmutableArray<SnowWarScoreEntrySnapshot> scores =
+        [
+            .. Present.Select(p => new SnowWarScoreEntrySnapshot
+            {
+                PlayerId = p.PlayerId,
+                Score = (Arena.GetHumanStats(p.HumanId) ?? EmptyStats).Score,
+            }),
+        ];
+
+        try
+        {
+            await _grainFactory.GetSnowWarScoreGrain().AddAsync(scores, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(
+                ex,
+                "Failed to record the scores of SnowWar game {GameId}",
+                _state.GameId
+            );
+        }
     }
 
     private Game2GameEndingMessageComposer Results() =>

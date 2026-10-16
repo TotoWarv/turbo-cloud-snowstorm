@@ -6,6 +6,7 @@ using Turbo.Database.Entities.Badges;
 using Turbo.Database.Entities.Bots;
 using Turbo.Database.Entities.Catalog;
 using Turbo.Database.Entities.Furniture;
+using Turbo.Database.Entities.Game;
 using Turbo.Database.Entities.Gamedata;
 using Turbo.Database.Entities.Guilds;
 using Turbo.Database.Entities.Habbicons;
@@ -135,6 +136,7 @@ public class TurboDbContext(DbContextOptions<TurboDbContext> options)
 
     public DbSet<MarketplaceTokenEntity> MarketplaceTokens { get; init; }
     public DbSet<PlayerEntity> Players { get; init; }
+    public DbSet<SnowWarScoreEntity> SnowWarScores { get; init; }
 
     public DbSet<RoomBanEntity> RoomBans { get; init; }
 
