@@ -18,6 +18,8 @@ public sealed class SnowWarConfig
 
     public int GameLengthSeconds { get; init; } = 180;
 
+    public int StageLoadTimeoutSeconds { get; init; } = 10;
+
     public int PreparingSeconds { get; init; } = 5;
 
     public int RematchSeconds { get; init; } = 30;

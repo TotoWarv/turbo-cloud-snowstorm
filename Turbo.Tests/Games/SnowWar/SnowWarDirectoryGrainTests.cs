@@ -524,4 +524,65 @@ public sealed class SnowWarDirectoryGrainTests
 
         Sent<Game2GameCreatedMessageComposer>(1).Should().HaveCount(2);
     }
+
+    [Fact]
+    public async Task rematch_players_are_put_together_in_a_new_lobby_with_their_teams()
+    {
+        var directory = NewDirectory();
+
+        var game = await StartGameAsync(directory, 1, 3);
+        await directory.OnGameFinishedAsync(game, Ct);
+        await directory.OnPlayerLeftGameAsync(game, 2, false, Ct);
+        await directory.RematchAsync(
+            game,
+            [Player(1) with { TeamId = 2 }, Player(3) with { TeamId = 2 }, Player(9)],
+            Ct
+        );
+
+        var created = Sent<Game2GameCreatedMessageComposer>(1).ToList();
+        created.Should().HaveCount(2);
+        var first = created[1].Lobby;
+        first.GameId.Should().NotBe(game);
+        first.Players.Select(p => (p.UserId, p.TeamId)).Should().Equal((1, 2));
+        Sent<Game2GameCreatedMessageComposer>(3)
+            .Should()
+            .ContainSingle()
+            .Which.Lobby.Players.Select(p => (p.UserId, p.TeamId))
+            .Should()
+            .Equal((1, 2), (3, 2));
+        Sent<Game2UserJoinedGameMessageComposer>(1)
+            .Select(m => m.Player.UserId)
+            .Should()
+            .Equal(2, 3, 3);
+        Sent<Game2GameCreatedMessageComposer>(9).Should().BeEmpty();
+        Sent<Game2StartCounterMessageMessageComposer>(3)
+            .Select(m => m.CountDownSeconds)
+            .Should()
+            .Equal(15, 15);
+        (await directory.GetGameIdOfPlayerAsync(1, Ct)).Should().BeNull();
+
+        _clock.Advance(TimeSpan.FromSeconds(15));
+        await TickAsync(directory);
+
+        StartedGames()[^1].Players.Select(p => (p.UserId, p.TeamId)).Should().Equal((1, 2), (3, 1));
+    }
+
+    [Fact]
+    public async Task a_rematch_skips_players_who_already_joined_another_lobby()
+    {
+        var directory = NewDirectory();
+
+        var game = await StartGameAsync(directory, 1, 2);
+        await directory.OnGameFinishedAsync(game, Ct);
+        await JoinAsync(directory, 1);
+        await directory.RematchAsync(game, [Player(1), Player(2) with { TeamId = 2 }], Ct);
+
+        Sent<Game2GameCreatedMessageComposer>(1).Should().HaveCount(2);
+        Sent<Game2GameCreatedMessageComposer>(2)
+            .Should()
+            .ContainSingle()
+            .Which.Lobby.Players.Select(p => p.UserId)
+            .Should()
+            .Equal(2);
+    }
 }

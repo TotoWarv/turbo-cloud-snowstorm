@@ -95,8 +95,15 @@ interface [GrainInterfaceType("Turbo.Primitives.Game.Grains.ISnowWarDirectoryGra
   DDAB1834: OnGameFinishedAsync(int, System.Threading.CancellationToken) -> Task
   2C21EF13: OnPlayerLeftGameAsync(int, Turbo.Primitives.Players.PlayerId, bool, System.Threading.CancellationToken) -> Task
   CFF50D8D: QuickJoinAsync(Turbo.Primitives.Players.PlayerId, Turbo.Primitives.Game.Snapshots.SnowWarPlayerSnapshot, System.Threading.CancellationToken) -> Task
+  E35F5E0C: RematchAsync(int, System.Collections.Immutable.ImmutableArray<Turbo.Primitives.Game.Snapshots.SnowWarPlayerSnapshot>, System.Threading.CancellationToken) -> Task
 
 interface [GrainInterfaceType("Turbo.Primitives.Game.Grains.ISnowWarGameGrain")] Turbo.Primitives.Game.Grains.ISnowWarGameGrain [Version(0)]
+  908F3BA3: ChatAsync(Turbo.Primitives.Players.PlayerId, string, System.Threading.CancellationToken) -> Task
+  E4627247: ExitAsync(Turbo.Primitives.Players.PlayerId, System.Threading.CancellationToken) -> Task
+  D40CC55C: PlayAgainAsync(Turbo.Primitives.Players.PlayerId, System.Threading.CancellationToken) -> Task
+  2D455092: QueueInputAsync(Turbo.Primitives.Players.PlayerId, Turbo.Primitives.Game.Enums.SnowWarInput, int[], int, int, System.Threading.CancellationToken) -> Task
+  359DE80B: RequestFullStatusAsync(Turbo.Primitives.Players.PlayerId, System.Threading.CancellationToken) -> Task
+  BD82F824: StageReadyAsync(Turbo.Primitives.Players.PlayerId, System.Threading.CancellationToken) -> Task
   F54E350E: StartAsync(Turbo.Primitives.Game.Snapshots.SnowWarGameLobbySnapshot, System.Threading.CancellationToken) -> Task
 
 interface [GrainInterfaceType("Turbo.Primitives.Guilds.Grains.IGuildDirectoryGrain")] Turbo.Primitives.Guilds.Grains.IGuildDirectoryGrain [Version(0)]
