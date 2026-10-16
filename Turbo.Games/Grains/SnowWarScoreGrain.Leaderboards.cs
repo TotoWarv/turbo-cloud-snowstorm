@@ -38,16 +38,7 @@ internal sealed partial class SnowWarScoreGrain
 
         await FlushAsync(ct);
 
-        var members = await MembersOfAsync(request, ct);
-
-        await using var dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct);
-
-        var scores = await Among(dbCtx, members)
-            .GroupBy(s => s.PlayerId)
-            .Select(g => new { PlayerId = g.Key, Score = g.Sum(s => s.Score) })
-            .ToListAsync(ct);
-
-        return await PageAsync(dbCtx, [.. scores.Select(s => (s.PlayerId, s.Score))], request, ct);
+        return await PageOfAsync(SnowWarLeaderboardKind.Total, DateOnly.MinValue, request, ct);
     }
 
     public async Task<SnowWarWeeklyLeaderboardPageSnapshot?> GetWeeklyAsync(
@@ -65,20 +56,14 @@ internal sealed partial class SnowWarScoreGrain
 
         var now = Now;
         var currentWeek = SnowWarWeeks.StartOf(now);
-
-        await using var dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct);
-
-        var oldestWeek = await dbCtx
-            .SnowWarScores.AsNoTracking()
-            .Select(s => (DateOnly?)s.WeekStart)
-            .MinAsync(ct);
+        var oldestWeek = await OldestWeekAsync(ct);
         var maxOffset = oldestWeek is { } oldest ? SnowWarWeeks.Between(oldest, currentWeek) : 0;
         var offset = Math.Clamp(weekOffset, 0, maxOffset);
         var week = SnowWarWeeks.Back(currentWeek, offset);
         var page =
             request.Scope == SnowWarLeaderboardScope.Groups
                 ? EmptyPage
-                : await WeekPageAsync(dbCtx, week, request, ct);
+                : await PageOfAsync(SnowWarLeaderboardKind.Weekly, week, request, ct);
 
         return new SnowWarWeeklyLeaderboardPageSnapshot
         {
@@ -91,35 +76,116 @@ internal sealed partial class SnowWarScoreGrain
         };
     }
 
-    private async Task<SnowWarLeaderboardPageSnapshot> WeekPageAsync(
-        TurboDbContext dbCtx,
+    private async Task<DateOnly?> OldestWeekAsync(CancellationToken ct)
+    {
+        if (
+            _state.OldestWeek is { } cached
+            && Now - cached.LoadedAt < TimeSpan.FromSeconds(_config.LeaderboardCacheSeconds)
+        )
+            return cached.Week;
+
+        await using var dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct);
+
+        var oldest = await dbCtx
+            .SnowWarScores.AsNoTracking()
+            .Select(s => (DateOnly?)s.WeekStart)
+            .MinAsync(ct);
+
+        _state.OldestWeek = new SnowWarCachedOldestWeek(oldest, Now);
+
+        return oldest;
+    }
+
+    private async Task<SnowWarLeaderboardPageSnapshot> PageOfAsync(
+        SnowWarLeaderboardKind kind,
         DateOnly week,
         SnowWarLeaderboardRequestSnapshot request,
         CancellationToken ct
     )
     {
-        var members = await MembersOfAsync(request, ct);
-        var scores = await Among(dbCtx, members)
-            .Where(s => s.WeekStart == week)
-            .Select(s => new { s.PlayerId, s.Score })
-            .ToListAsync(ct);
+        var board =
+            request.Scope == SnowWarLeaderboardScope.Friends
+                ? await ScanAsync(kind, week, await MembersOfAsync(request, ct), ct)
+                : await SharedBoardAsync(kind, week, ct);
+        var slice = SnowWarLeaderboardPages.Slice(
+            board.Ranked,
+            request,
+            _config.LeaderboardMaxRows
+        );
 
-        return await PageAsync(dbCtx, [.. scores.Select(s => (s.PlayerId, s.Score))], request, ct);
+        await LoadNamesAsync(board, slice, ct);
+
+        return new SnowWarLeaderboardPageSnapshot
+        {
+            Entries = [.. slice.Select(r => Entry(r, board.Names.GetValueOrDefault(r.PlayerId)))],
+            TotalListSize = board.Ranked.Length,
+        };
     }
 
-    private async Task<SnowWarLeaderboardPageSnapshot> PageAsync(
-        TurboDbContext dbCtx,
-        IReadOnlyList<(int PlayerId, long Score)> scores,
-        SnowWarLeaderboardRequestSnapshot request,
+    private async Task<SnowWarLeaderboardBoard> SharedBoardAsync(
+        SnowWarLeaderboardKind kind,
+        DateOnly week,
         CancellationToken ct
     )
     {
-        var ranked = SnowWarLeaderboardPages.Rank(scores);
-        var slice = SnowWarLeaderboardPages.Slice(ranked, request, _config.LeaderboardMaxRows);
-        var ids = slice.Select(r => r.PlayerId).ToList();
+        if (
+            _state.Boards.TryGetValue((kind, week), out var cached)
+            && Now - cached.LoadedAt < TimeSpan.FromSeconds(_config.LeaderboardCacheSeconds)
+        )
+            return cached;
+
+        var board = await ScanAsync(kind, week, null, ct);
+
+        _state.Boards[(kind, week)] = board;
+
+        return board;
+    }
+
+    private async Task<SnowWarLeaderboardBoard> ScanAsync(
+        SnowWarLeaderboardKind kind,
+        DateOnly week,
+        List<int>? members,
+        CancellationToken ct
+    )
+    {
+        await using var dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct);
+
+        var scores =
+            kind == SnowWarLeaderboardKind.Weekly
+                ? await Among(dbCtx, members)
+                    .Where(s => s.WeekStart == week)
+                    .Select(s => new { s.PlayerId, s.Score })
+                    .ToListAsync(ct)
+                : await Among(dbCtx, members)
+                    .GroupBy(s => s.PlayerId)
+                    .Select(g => new { PlayerId = g.Key, Score = g.Sum(s => s.Score) })
+                    .ToListAsync(ct);
+
+        return new SnowWarLeaderboardBoard(
+            SnowWarLeaderboardPages.Rank(scores.Select(s => (s.PlayerId, s.Score))),
+            Now
+        );
+    }
+
+    private async Task LoadNamesAsync(
+        SnowWarLeaderboardBoard board,
+        ImmutableArray<SnowWarRankedScore> slice,
+        CancellationToken ct
+    )
+    {
+        var missing = slice
+            .Select(r => r.PlayerId)
+            .Where(id => !board.Names.ContainsKey(id))
+            .ToList();
+
+        if (missing.Count == 0)
+            return;
+
+        await using var dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct);
+
         var players = await dbCtx
             .Players.AsNoTracking()
-            .Where(p => ids.Contains(p.Id))
+            .Where(p => missing.Contains(p.Id))
             .Select(p => new
             {
                 p.Id,
@@ -127,30 +193,29 @@ internal sealed partial class SnowWarScoreGrain
                 p.Figure,
                 p.Gender,
             })
-            .ToDictionaryAsync(p => p.Id, ct);
+            .ToListAsync(ct);
 
-        return new SnowWarLeaderboardPageSnapshot
-        {
-            Entries =
-            [
-                .. slice.Select(r =>
-                {
-                    var player = players.GetValueOrDefault(r.PlayerId);
-
-                    return new SnowWarLeaderboardEntrySnapshot
-                    {
-                        UserId = r.PlayerId,
-                        Score = (int)Math.Min(int.MaxValue, r.Score),
-                        Rank = r.Rank,
-                        Name = player?.Name ?? string.Empty,
-                        Figure = player?.Figure ?? string.Empty,
-                        Gender = (player?.Gender ?? AvatarGenderType.Male).ToLegacyString(),
-                    };
-                }),
-            ],
-            TotalListSize = ranked.Length,
-        };
+        foreach (var player in players)
+            board.Names[player.Id] = new SnowWarLeaderboardName(
+                player.Name,
+                player.Figure,
+                player.Gender.ToLegacyString()
+            );
     }
+
+    private static SnowWarLeaderboardEntrySnapshot Entry(
+        SnowWarRankedScore ranked,
+        SnowWarLeaderboardName? name
+    ) =>
+        new()
+        {
+            UserId = ranked.PlayerId,
+            Score = (int)Math.Min(int.MaxValue, ranked.Score),
+            Rank = ranked.Rank,
+            Name = name?.Name ?? string.Empty,
+            Figure = name?.Figure ?? string.Empty,
+            Gender = name?.Gender ?? AvatarGenderType.Male.ToLegacyString(),
+        };
 
     private static IQueryable<SnowWarScoreEntity> Among(TurboDbContext dbCtx, List<int>? members)
     {
