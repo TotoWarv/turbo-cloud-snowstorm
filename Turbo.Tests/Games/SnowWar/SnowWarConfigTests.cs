@@ -69,6 +69,10 @@ public sealed class SnowWarConfigTests : IDisposable
         config.StageLoadTimeoutSeconds.Should().Be(10);
         config.Arenas.Should().Equal(8, 9, 11);
         config.RayGunsEnabled.Should().BeTrue();
+        config.LeaderboardMaxRows.Should().Be(50);
+        config.LeaderboardRequestIntervalMilliseconds.Should().Be(1000);
+        config.ScoreFlushIntervalSeconds.Should().Be(5);
+        config.MaxPendingScores.Should().Be(10000);
         config
             .Backdrops.Should()
             .BeEquivalentTo(

@@ -110,6 +110,12 @@ interface [GrainInterfaceType("Turbo.Primitives.Game.Grains.ISnowWarGameGrain")]
   BD82F824: StageReadyAsync(Turbo.Primitives.Players.PlayerId, System.Threading.CancellationToken) -> Task
   F54E350E: StartAsync(Turbo.Primitives.Game.Snapshots.SnowWarGameLobbySnapshot, System.Threading.CancellationToken) -> Task
 
+interface [GrainInterfaceType("Turbo.Primitives.Game.Grains.ISnowWarScoreGrain")] Turbo.Primitives.Game.Grains.ISnowWarScoreGrain [Version(0)]
+  14B1D5D3: AddAsync(System.Collections.Immutable.ImmutableArray<Turbo.Primitives.Game.Snapshots.SnowWarScoreEntrySnapshot>, System.Threading.CancellationToken) -> Task
+  0F4CE6F0: GetPlayerTotalsAsync(Turbo.Primitives.Players.PlayerId, System.Threading.CancellationToken) -> Task<Turbo.Primitives.Game.Snapshots.SnowWarPlayerTotalsSnapshot>
+  74EE220D: GetTotalAsync(Turbo.Primitives.Game.Snapshots.SnowWarLeaderboardRequestSnapshot, System.Threading.CancellationToken) -> Task<Turbo.Primitives.Game.Snapshots.SnowWarLeaderboardPageSnapshot?>
+  27440222: GetWeeklyAsync(Turbo.Primitives.Game.Snapshots.SnowWarLeaderboardRequestSnapshot, int, System.Threading.CancellationToken) -> Task<Turbo.Primitives.Game.Snapshots.SnowWarWeeklyLeaderboardPageSnapshot?>
+
 interface [GrainInterfaceType("Turbo.Primitives.Guilds.Grains.IGuildDirectoryGrain")] Turbo.Primitives.Guilds.Grains.IGuildDirectoryGrain [Version(0)]
   EEAD8CC2: GetDefaultBadgePartsAsync(System.Threading.CancellationToken) -> Task<System.Collections.Immutable.ImmutableArray<Turbo.Primitives.Guilds.Snapshots.GuildBadgePartSnapshot>>
   EC544848: GetEditorDataAsync(System.Threading.CancellationToken) -> Task<Turbo.Primitives.Guilds.Snapshots.GuildEditorDataSnapshot>

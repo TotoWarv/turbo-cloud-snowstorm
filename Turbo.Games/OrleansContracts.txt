@@ -13,3 +13,5 @@
 class [GrainType("snowwardirectory")] Turbo.Games.Grains.SnowWarDirectoryGrain
 
 class [GrainType("snowwargame")] Turbo.Games.Grains.SnowWarGameGrain
+
+class [GrainType("snowwarscore")] Turbo.Games.Grains.SnowWarScoreGrain
