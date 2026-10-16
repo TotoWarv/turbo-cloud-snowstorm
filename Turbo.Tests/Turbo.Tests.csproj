@@ -15,6 +15,10 @@
   <ItemGroup>
     <EmbeddedResource Include="Protocol\Fixtures\achievements.json" />
     <EmbeddedResource
+      Include="Games\SnowWar\Fixtures\*.json"
+      LogicalName="Games.SnowWar.Fixtures.%(Filename)%(Extension)"
+    />
+    <EmbeddedResource
       Include="Protocol\Fixtures\snowwar\*.hex"
       LogicalName="Protocol.Fixtures.snowwar.%(Filename)%(Extension)"
     />
@@ -55,6 +59,7 @@
     <!-- For PermissionNodeReaderTests, which reads every server assembly's IL. -->
     <ProjectReference Include="..\Turbo.Guilds\Turbo.Guilds.csproj" />
     <ProjectReference Include="..\Turbo.Inventory\Turbo.Inventory.csproj" />
+    <ProjectReference Include="..\Turbo.Games\Turbo.Games.csproj" />
     <ProjectReference Include="..\Turbo.Navigator\Turbo.Navigator.csproj" />
     <!-- For the Support harnesses, which build grains, rooms and packet round-trips without a silo. -->
     <ProjectReference Include="..\Turbo.Main\Turbo.Main.csproj" />
