@@ -11,6 +11,6 @@ internal class Game2PlayerExitedGameArenaMessageComposerSerializer(int header)
         Game2PlayerExitedGameArenaMessageComposer message
     )
     {
-        //
+        packet.WriteInteger(message.UserId).WriteInteger(message.PlayerGameObjectId);
     }
 }

@@ -5247,6 +5247,42 @@ public class Revision20260909 : IRevision
 
             #region Game Score
             {
+                typeof(Game2TotalLeaderboardMessageComposer),
+                new Game2TotalLeaderboardMessageComposerSerializer(
+                    MessageComposer.Game2TotalLeaderboardMessageComposer
+                )
+            },
+            {
+                typeof(Game2FriendsLeaderboardMessageComposer),
+                new Game2FriendsLeaderboardMessageComposerSerializer(
+                    MessageComposer.Game2FriendsLeaderboardMessageComposer
+                )
+            },
+            {
+                typeof(Game2TotalGroupLeaderboardMessageComposer),
+                new Game2TotalGroupLeaderboardMessageComposerSerializer(
+                    MessageComposer.Game2TotalGroupLeaderboardMessageComposer
+                )
+            },
+            {
+                typeof(Game2WeeklyLeaderboardMessageComposer),
+                new Game2WeeklyLeaderboardMessageComposerSerializer(
+                    MessageComposer.Game2WeeklyLeaderboardMessageComposer
+                )
+            },
+            {
+                typeof(Game2WeeklyFriendsLeaderboardMessageComposer),
+                new Game2WeeklyFriendsLeaderboardMessageComposerSerializer(
+                    MessageComposer.Game2WeeklyFriendsLeaderboardMessageComposer
+                )
+            },
+            {
+                typeof(Game2WeeklyGroupLeaderboardMessageComposer),
+                new Game2WeeklyGroupLeaderboardMessageComposerSerializer(
+                    MessageComposer.Game2WeeklyGroupLeaderboardMessageComposer
+                )
+            },
+            {
                 typeof(WeeklyGameRewardEventMessageComposer),
                 new WeeklyGameRewardEventMessageComposerSerializer(
                     MessageComposer.WeeklyGameRewardMessageComposer

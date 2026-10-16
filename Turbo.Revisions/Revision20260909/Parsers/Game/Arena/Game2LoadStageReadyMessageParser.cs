@@ -6,5 +6,6 @@ namespace Turbo.Revisions.Revision20260909.Parsers.Game.Arena;
 
 internal class Game2LoadStageReadyMessageParser : IParser
 {
-    public IMessageEvent Parse(IClientPacket packet) => new Game2LoadStageReadyMessage();
+    public IMessageEvent Parse(IClientPacket packet) =>
+        new Game2LoadStageReadyMessage { Percentage = packet.PopInt() };
 }

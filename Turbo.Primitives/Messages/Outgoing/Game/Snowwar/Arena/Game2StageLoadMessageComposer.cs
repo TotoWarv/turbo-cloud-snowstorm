@@ -6,5 +6,6 @@ namespace Turbo.Primitives.Messages.Outgoing.Game.Snowwar.Arena;
 [GenerateSerializer, Immutable]
 public sealed record Game2StageLoadMessageComposer : IComposer
 {
-    // TODO: add properties if/when identified
+    [Id(0)]
+    public required int GameType { get; init; }
 }

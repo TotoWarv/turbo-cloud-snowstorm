@@ -6,5 +6,6 @@ namespace Turbo.Revisions.Revision20260909.Parsers.Game.Ingame;
 
 internal class Game2RequestFullStatusUpdateMessageParser : IParser
 {
-    public IMessageEvent Parse(IClientPacket packet) => new Game2RequestFullStatusUpdateMessage();
+    public IMessageEvent Parse(IClientPacket packet) =>
+        new Game2RequestFullStatusUpdateMessage { Reason = packet.PopInt() };
 }
