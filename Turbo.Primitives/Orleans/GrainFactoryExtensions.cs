@@ -42,6 +42,7 @@ namespace Turbo.Primitives.Orleans;
 public static class GrainFactoryExtensions
 {
     private const long SNOWWAR_DIRECTORY_KEY = 0;
+    private const long SNOWWAR_SCORE_KEY = 0;
 
     public static IRoomGrain GetRoomGrain(this IGrainFactory factory, RoomId roomId) =>
         factory.GetGrain<IRoomGrain>((long)roomId.Value);
@@ -79,6 +80,9 @@ public static class GrainFactoryExtensions
 
     public static ISnowWarDirectoryGrain GetSnowWarDirectoryGrain(this IGrainFactory factory) =>
         factory.GetGrain<ISnowWarDirectoryGrain>(SNOWWAR_DIRECTORY_KEY);
+
+    public static ISnowWarScoreGrain GetSnowWarScoreGrain(this IGrainFactory factory) =>
+        factory.GetGrain<ISnowWarScoreGrain>(SNOWWAR_SCORE_KEY);
 
     public static ISnowWarGameGrain GetSnowWarGameGrain(this IGrainFactory factory, int gameId) =>
         factory.GetGrain<ISnowWarGameGrain>(gameId);

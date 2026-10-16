@@ -325,6 +325,27 @@ public sealed class SnowWarGameGrainTests
     }
 
     [Fact]
+    public async Task the_end_of_the_game_records_the_score_of_every_player_still_there()
+    {
+        var game = await RunningGameAsync(3);
+
+        await game.ExitAsync(3, Ct);
+        await PlayToTheEndAsync(game);
+
+        var recorded = _fakes
+            .Log.Of(nameof(ISnowWarScoreGrain.AddAsync))
+            .Where(call => call.Interface == typeof(ISnowWarScoreGrain))
+            .Should()
+            .ContainSingle()
+            .Which.Args[0];
+
+        ((ImmutableArray<SnowWarScoreEntrySnapshot>)recorded!)
+            .Select(entry => (entry.PlayerId.Value, entry.Score))
+            .Should()
+            .Equal((1, 0), (2, 0));
+    }
+
+    [Fact]
     public async Task a_player_leaving_during_play_is_announced_and_the_game_goes_on()
     {
         PlayersComeFromRooms();

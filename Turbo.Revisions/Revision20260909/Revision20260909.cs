@@ -327,6 +327,14 @@ public class Revision20260909 : IRevision
             },
             { MessageEvent.PurchaseRoomAdMessageEvent, new PurchaseRoomAdMessageParser() },
             {
+                MessageEvent.PurchaseSnowWarGameTokensOfferMessageEvent,
+                new PurchaseSnowWarGameTokensOfferMessageParser()
+            },
+            {
+                MessageEvent.GetSnowWarGameTokensOfferMessageEvent,
+                new GetSnowWarGameTokensOfferMessageParser()
+            },
+            {
                 MessageEvent.PurchaseTargetedOfferMessageEvent,
                 new PurchaseTargetedOfferMessageParser()
             },

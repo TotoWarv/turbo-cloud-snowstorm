@@ -1943,6 +1943,31 @@ namespace Turbo.Database.Migrations
                     b.ToTable("furniture");
                 });
 
+            modelBuilder.Entity("Turbo.Database.Entities.Game.SnowWarScoreEntity", b =>
+                {
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("int")
+                        .HasColumnName("player_id");
+
+                    b.Property<DateOnly>("WeekStart")
+                        .HasColumnType("date")
+                        .HasColumnName("week_start");
+
+                    b.Property<int>("Matches")
+                        .HasColumnType("int")
+                        .HasColumnName("matches");
+
+                    b.Property<long>("Score")
+                        .HasColumnType("bigint")
+                        .HasColumnName("score");
+
+                    b.HasKey("PlayerId", "WeekStart");
+
+                    b.HasIndex("WeekStart", "Score");
+
+                    b.ToTable("snowwar_scores");
+                });
+
             modelBuilder.Entity("Turbo.Database.Entities.Gamedata.GamedataBuildEntity", b =>
                 {
                     b.Property<int>("Id")
