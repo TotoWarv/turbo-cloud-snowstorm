@@ -1,4 +1,6 @@
+using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Turbo.Contracts.Plugins;
 using Turbo.Games.Configuration;
@@ -16,5 +18,6 @@ public sealed class GamesModule : IHostPluginModule
             builder.Configuration.GetSection(SnowWarConfig.SECTION_NAME)
         );
         services.AddSingleton<SnowWarArenaCatalog>();
+        services.TryAddSingleton(TimeProvider.System);
     }
 }
