@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
@@ -29,6 +30,12 @@ public interface ISnowWarDirectoryGrain : IGrainWithIntegerKey
     );
 
     public Task OnGameFinishedAsync(int gameId, CancellationToken ct);
+
+    public Task RematchAsync(
+        int gameId,
+        ImmutableArray<SnowWarPlayerSnapshot> players,
+        CancellationToken ct
+    );
 
     public Task<int?> GetGameIdOfPlayerAsync(PlayerId playerId, CancellationToken ct);
 }

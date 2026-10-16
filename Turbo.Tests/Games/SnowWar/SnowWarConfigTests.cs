@@ -66,6 +66,7 @@ public sealed class SnowWarConfigTests : IDisposable
         config.PreparingSeconds.Should().Be(5);
         config.RematchSeconds.Should().Be(30);
         config.LeaveBlockSeconds.Should().Be(180);
+        config.StageLoadTimeoutSeconds.Should().Be(10);
         config.Arenas.Should().Equal(8, 9, 11);
         config.RayGunsEnabled.Should().BeTrue();
         config
