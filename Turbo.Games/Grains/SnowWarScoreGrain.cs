@@ -66,7 +66,7 @@ internal sealed partial class SnowWarScoreGrain : Grain, ISnowWarScoreGrain
         _flushTimer?.Dispose();
         _flushTimer = null;
 
-        await FlushAsync(ct);
+        await FlushOnDeactivationAsync();
     }
 
     public Task AddAsync(ImmutableArray<SnowWarScoreEntrySnapshot> scores, CancellationToken ct)
@@ -92,7 +92,29 @@ internal sealed partial class SnowWarScoreGrain : Grain, ISnowWarScoreGrain
         CancellationToken ct
     )
     {
-        await FlushAsync(ct);
+        var stored = await StoredTotalsAsync(playerId, ct);
+        var pending = _state.PendingScores.Where(p => p.PlayerId == playerId).ToList();
+        var total = stored.Score + pending.Sum(p => p.Score);
+
+        return new SnowWarPlayerTotalsSnapshot
+        {
+            TotalScore = total,
+            GamesPlayed = stored.Matches + pending.Sum(p => p.Matches),
+            SkillLevel = SnowWarSkill.LevelOf(total),
+            ScoreToNextLevel = SnowWarSkill.ScoreToNextLevel(total),
+        };
+    }
+
+    private async Task<SnowWarCachedTotals> StoredTotalsAsync(
+        PlayerId playerId,
+        CancellationToken ct
+    )
+    {
+        if (
+            _state.Totals.TryGetValue(playerId, out var cached)
+            && Now - cached.LoadedAt < TimeSpan.FromSeconds(_config.PlayerTotalsCacheSeconds)
+        )
+            return cached;
 
         await using var dbCtx = await _dbCtxFactory.CreateDbContextAsync(ct);
 
@@ -101,20 +123,17 @@ internal sealed partial class SnowWarScoreGrain : Grain, ISnowWarScoreGrain
             .Where(s => s.PlayerId == playerId.Value)
             .Select(s => new { s.Score, s.Matches })
             .ToListAsync(ct);
-        var total = rows.Sum(r => r.Score);
+        var loaded = new SnowWarCachedTotals(rows.Sum(r => r.Score), rows.Sum(r => r.Matches), Now);
 
-        return new SnowWarPlayerTotalsSnapshot
-        {
-            TotalScore = total,
-            GamesPlayed = rows.Sum(r => r.Matches),
-            SkillLevel = SnowWarSkill.LevelOf(total),
-            ScoreToNextLevel = SnowWarSkill.ScoreToNextLevel(total),
-        };
+        _state.Totals[playerId] = loaded;
+
+        return loaded;
     }
 
     private async Task OnFlushTimerAsync(CancellationToken ct)
     {
         ForgetExpiredRequests();
+        ForgetExpiredCaches();
 
         await FlushAsync(ct);
     }
@@ -140,13 +159,8 @@ internal sealed partial class SnowWarScoreGrain : Grain, ISnowWarScoreGrain
 
         if (_state.PendingScores.Count >= _config.MaxPendingScores)
         {
-            _logger.LogWarning(
-                "SnowWar score queue is full ({Max}); dropped the score of player {PlayerId}",
-                _config.MaxPendingScores,
-                _state.PendingScores[0].PlayerId
-            );
-
             _state.PendingScores.RemoveAt(0);
+            _state.DroppedScores++;
         }
 
         _state.PendingScores.Add(score);
@@ -155,7 +169,11 @@ internal sealed partial class SnowWarScoreGrain : Grain, ISnowWarScoreGrain
     private async Task<bool> FlushAsync(CancellationToken ct)
     {
         if (_state.PendingScores.Count == 0)
+        {
+            ReportDroppedScores();
+
             return true;
+        }
 
         var taken = _state.PendingScores.ToList();
 
@@ -164,6 +182,7 @@ internal sealed partial class SnowWarScoreGrain : Grain, ISnowWarScoreGrain
         try
         {
             await WriteAsync(taken, ct);
+            OnWritten(taken);
 
             return true;
         }
@@ -183,6 +202,65 @@ internal sealed partial class SnowWarScoreGrain : Grain, ISnowWarScoreGrain
                 Queue(score);
 
             return false;
+        }
+        finally
+        {
+            ReportDroppedScores();
+        }
+    }
+
+    private async Task FlushOnDeactivationAsync()
+    {
+        var taken = _state.PendingScores.ToList();
+
+        _state.PendingScores.Clear();
+
+        if (taken.Count > 0)
+        {
+            try
+            {
+                await WriteAsync(taken, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Failed to write {Count} SnowWar scores on deactivation; they are lost",
+                    taken.Count
+                );
+            }
+        }
+
+        ReportDroppedScores();
+    }
+
+    private void ReportDroppedScores()
+    {
+        if (_state.DroppedScores == 0)
+            return;
+
+        _logger.LogWarning(
+            "SnowWar score queue was full ({Max}); dropped {Dropped} scores",
+            _config.MaxPendingScores,
+            _state.DroppedScores
+        );
+
+        _state.DroppedScores = 0;
+    }
+
+    private void OnWritten(IReadOnlyList<SnowWarPendingScore> written)
+    {
+        _state.Boards.Clear();
+        _state.OldestWeek = null;
+
+        foreach (var score in written)
+        {
+            if (_state.Totals.TryGetValue(score.PlayerId, out var cached))
+                _state.Totals[score.PlayerId] = cached with
+                {
+                    Score = cached.Score + score.Score,
+                    Matches = cached.Matches + score.Matches,
+                };
         }
     }
 
@@ -219,6 +297,22 @@ internal sealed partial class SnowWarScoreGrain : Grain, ISnowWarScoreGrain
         }
 
         await dbCtx.SaveChangesAsync(ct);
+    }
+
+    private void ForgetExpiredCaches()
+    {
+        var totalsAge = TimeSpan.FromSeconds(_config.PlayerTotalsCacheSeconds);
+        var boardAge = TimeSpan.FromSeconds(_config.LeaderboardCacheSeconds);
+
+        foreach (
+            var expired in _state.Totals.Where(t => Now - t.Value.LoadedAt >= totalsAge).ToList()
+        )
+            _state.Totals.Remove(expired.Key);
+
+        foreach (
+            var expired in _state.Boards.Where(b => Now - b.Value.LoadedAt >= boardAge).ToList()
+        )
+            _state.Boards.Remove(expired.Key);
     }
 
     private void ForgetExpiredRequests()

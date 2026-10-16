@@ -1,8 +1,12 @@
 using System.Reflection;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Orleans;
 using Turbo.Database.Entities.Players;
+using Turbo.Events.Extensions;
 using Turbo.Games;
 using Turbo.Games.Configuration;
 using Turbo.Games.SnowWar;
@@ -18,6 +22,7 @@ using Turbo.Primitives.Players.Events;
 using Turbo.Primitives.Players.Grains;
 using Turbo.Primitives.Players.Snapshots;
 using Turbo.Primitives.Rooms.Enums;
+using Turbo.Runtime.AssemblyProcessing;
 using Turbo.Tests.Support;
 using Xunit;
 
@@ -423,7 +428,10 @@ public sealed class SnowWarHandlerTests
         await hotel.Gateway.AddSessionAsync(session.SessionKey, session);
         await hotel.Gateway.AddSessionToPlayerAsync(session.SessionKey, SessionHarness.PlayerId);
 
-        var offline = new SnowWarPlayerOfflineHandler(hotel.Fakes.Create<IGrainFactory>());
+        var offline = new SnowWarPlayerOfflineHandler(
+            hotel.Fakes.Create<IGrainFactory>(),
+            NullLogger<SnowWarPlayerOfflineHandler>.Instance
+        );
         hotel.Events.OnAsync<PlayerOnlineChangedEvent>(
             (env, ct) => offline.HandleAsync(env, null!, ct)
         );
@@ -452,7 +460,10 @@ public sealed class SnowWarHandlerTests
         await directory.QuickJoinAsync(1, LobbyPlayer(1), Ct);
         await directory.QuickJoinAsync(2, LobbyPlayer(2), Ct);
 
-        var offline = new SnowWarPlayerOfflineHandler(fakes.Create<IGrainFactory>());
+        var offline = new SnowWarPlayerOfflineHandler(
+            fakes.Create<IGrainFactory>(),
+            NullLogger<SnowWarPlayerOfflineHandler>.Instance
+        );
 
         await offline.HandleAsync(
             new PlayerOnlineChangedEvent { PlayerId = 1, Online = false },
@@ -466,6 +477,83 @@ public sealed class SnowWarHandlerTests
             .ContainSingle()
             .Which.UserId.Should()
             .Be(1);
+    }
+
+    [Fact]
+    public async Task a_failed_lobby_leave_still_takes_the_player_out_of_the_game()
+    {
+        var fakes = new Fakes();
+        var logger = new CapturingLogger<SnowWarPlayerOfflineHandler>();
+        fakes.Handlers[nameof(ISnowWarDirectoryGrain.LeaveLobbyAsync)] = _ =>
+            Task.FromException(new InvalidOperationException("directory down"));
+        fakes.Handlers[nameof(ISnowWarDirectoryGrain.GetGameIdOfPlayerAsync)] = _ =>
+            Task.FromResult<int?>(7);
+
+        var offline = new SnowWarPlayerOfflineHandler(fakes.Create<IGrainFactory>(), logger);
+
+        await offline.HandleAsync(
+            new PlayerOnlineChangedEvent { PlayerId = 1, Online = false },
+            null!,
+            Ct
+        );
+
+        fakes
+            .Log.Of(nameof(ISnowWarGameGrain.ExitAsync))
+            .Should()
+            .ContainSingle()
+            .Which.Key.Should()
+            .Be(7L);
+        logger.AtLeast(LogLevel.Error).Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task a_failed_game_lookup_is_logged_after_the_lobby_leave()
+    {
+        var fakes = new Fakes();
+        var logger = new CapturingLogger<SnowWarPlayerOfflineHandler>();
+        fakes.Handlers[nameof(ISnowWarDirectoryGrain.GetGameIdOfPlayerAsync)] = _ =>
+            Task.FromException<int?>(new InvalidOperationException("directory down"));
+
+        var offline = new SnowWarPlayerOfflineHandler(fakes.Create<IGrainFactory>(), logger);
+
+        await offline.HandleAsync(
+            new PlayerOnlineChangedEvent { PlayerId = 1, Online = false },
+            null!,
+            Ct
+        );
+
+        fakes.Log.Of(nameof(ISnowWarDirectoryGrain.LeaveLobbyAsync)).Should().ContainSingle();
+        logger.AtLeast(LogLevel.Error).Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task the_hotel_event_pipeline_discovers_the_disconnect_handler()
+    {
+        var fakes = new Fakes();
+        var services = new ServiceCollection()
+            .AddLogging()
+            .AddTurboEventSystem()
+            .AddSingleton(fakes.Create<IGrainFactory>())
+            .AddSingleton<AssemblyProcessor>()
+            .BuildServiceProvider();
+        var module = new GamesModule();
+
+        using var registrations = await services
+            .GetRequiredService<AssemblyProcessor>()
+            .ProcessAsync(module.GetType().Assembly, services, Ct);
+
+        await services
+            .GetRequiredService<Turbo.Events.EventSystem>()
+            .PublishAsync(new PlayerOnlineChangedEvent { PlayerId = 4, Online = false }, Ct);
+
+        module.Should().BeAssignableTo<Turbo.Contracts.Plugins.IHostPluginModule>();
+        fakes
+            .Log.Of(nameof(ISnowWarDirectoryGrain.LeaveLobbyAsync))
+            .Should()
+            .ContainSingle()
+            .Which.Args[0]
+            .Should()
+            .Be((PlayerId)4);
     }
 
     private static SnowWarPlayerSnapshot LobbyPlayer(int id) =>

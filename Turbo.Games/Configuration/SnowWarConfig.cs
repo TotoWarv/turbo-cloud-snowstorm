@@ -38,6 +38,10 @@ public sealed class SnowWarConfig
 
     public int MaxPendingScores { get; init; } = 10000;
 
+    public int PlayerTotalsCacheSeconds { get; init; } = 30;
+
+    public int LeaderboardCacheSeconds { get; init; } = 10;
+
     public Dictionary<int, string> Backdrops { get; init; } =
         new()
         {
