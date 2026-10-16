@@ -1,0 +1,52 @@
+namespace Turbo.Games.SnowWar.Simulation;
+
+internal static class SnowWarConstants
+{
+    public const int SUBTURNS_PER_TURN = 3;
+    public const int TILE_SIZE = 3200;
+    public const int HALF_TILE = 1600;
+    public const int WALK_STEP = 534;
+    public const int ARRIVAL_THRESHOLD = 267;
+    public const int MAX_HEALTH = 5;
+    public const int MAX_SNOWBALLS = 5;
+    public const int MAKE_SNOWBALL_SUBTURNS = 20;
+    public const int STUN_SUBTURNS = 100;
+    public const int INVINCIBILITY_SUBTURNS = 60;
+    public const int THROW_INTERVAL = 5;
+    public const int HIT_POINTS = 1;
+    public const int KNOCKDOWN_POINTS = 5;
+    public const int HUMAN_RADIUS = 1600;
+    public const int HUMAN_HIT_HEIGHT = 5000;
+    public const int SNOWBALL_RADIUS = 400;
+    public const int SNOWBALL_START_HEIGHT = 3000;
+    public const int THROW_DISTANCE_STEP = 200;
+    public const int QUICK_SPEED = 2000;
+    public const int QUICK_LIFE = 10;
+    public const double SHORT_LOB_TIME_PER_UNIT = 0.000559;
+    public const double LONG_LOB_TIME_PER_UNIT = 0.0007072135785007072;
+    public const int SHORT_LOB_RANGE = 60000;
+    public const int LONG_LOB_RANGE = 100000;
+    public const int DEFAULT_QUICK_RANGE = 42000;
+    public const int DEFAULT_SHORT_LOB_RANGE = 60000;
+    public const int QUICK_HEIGHT_FACTOR = 10;
+    public const int SHORT_LOB_HEIGHT_FACTOR = 25;
+    public const int LONG_LOB_HEIGHT_FACTOR = 50;
+    public const int BASE_VECTOR_DIVISOR = 255;
+    public const int TREE_MAX_HITS = 3;
+    public const int TREE_RADIUS = 2799;
+    public const int PILE_MAX = 12;
+    public const int PILE_RADIUS_PER_SNOWBALL = 100;
+    public const int MACHINE_MAX = 5;
+    public const int MACHINE_RADIUS = 1200;
+    public const int MACHINE_REFILL_SUBTURNS = 100;
+    public const int PICKUP_INTERVAL = 20;
+    public const int RAY_GUN_SNOWBALLS = 7;
+    public const int RAY_GUN_RANGE = 15;
+    public const int RAY_GUN_RECHARGE_SUBTURNS = 60;
+    public const int SPAWN_FACING_X = 25;
+    public const int SPAWN_FACING_Y = 25;
+    public const int SPAWN_FIRST_DISTANCE = 12;
+    public const int SPAWN_DISTANCE_STEP = 2;
+    public const int MAX_PENDING_INPUTS = 12;
+    public const int TEAM_COUNT = 2;
+}
