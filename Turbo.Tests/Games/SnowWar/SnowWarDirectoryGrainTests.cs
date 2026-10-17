@@ -295,6 +295,56 @@ public sealed class SnowWarDirectoryGrainTests
     }
 
     [Fact]
+    public async Task new_lobbies_take_the_arenas_in_turn()
+    {
+        var directory = NewDirectory();
+
+        await JoinAllAsync(directory, 1, 25);
+
+        new[] { 1, 9, 17, 25 }
+            .Select(first => Sent<Game2GameCreatedMessageComposer>(first).Single().Lobby.FieldType)
+            .Should()
+            .Equal(8, 9, 11, 8);
+    }
+
+    [Fact]
+    public async Task a_rematch_lobby_takes_the_next_arena()
+    {
+        var directory = NewDirectory();
+        var gameId = await StartGameAsync(directory, 1, 2);
+
+        await directory.RematchAsync(gameId, [Player(1), Player(2)], Ct);
+
+        Sent<Game2GameCreatedMessageComposer>(1)
+            .Select(created => created.Lobby.FieldType)
+            .Should()
+            .Equal(8, 9);
+    }
+
+    [Fact]
+    public async Task a_game_that_went_away_unclosed_frees_its_players_and_its_place()
+    {
+        var directory = NewDirectory(new SnowWarConfig { MaxConcurrentGames = 1 });
+        var gameId = await StartGameAsync(directory, 1, 2);
+
+        await JoinAllAsync(directory, 3, 4);
+        _clock.Advance(TimeSpan.FromSeconds(15));
+        await TickAsync(directory);
+
+        StartedGames().Should().ContainSingle();
+
+        await directory.OnGameDeactivatedAsync(gameId, Ct);
+
+        (await directory.GetGameIdOfPlayerAsync(1, Ct)).Should().BeNull();
+        StartedGames().Should().HaveCount(2);
+
+        await JoinAsync(directory, 1);
+
+        Sent<Game2JoiningGameFailedMessageMessageComposer>(1).Should().BeEmpty();
+        Sent<Game2GameCreatedMessageComposer>(1).Should().HaveCount(2);
+    }
+
+    [Fact]
     public async Task teams_are_rebalanced_when_the_game_starts()
     {
         var directory = NewDirectory();

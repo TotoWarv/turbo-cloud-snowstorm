@@ -1,4 +1,7 @@
 using System.Text.Json;
+using Turbo.Games.SnowWar.Simulation;
+using Turbo.Primitives.Game.Enums;
+using Turbo.Primitives.Game.Snapshots;
 using Xunit;
 
 namespace Turbo.Tests.Games.SnowWar.Simulation;
@@ -59,4 +62,55 @@ public sealed class SnowWarDeterminismTests
 
         Assert.Equal([1, 2, 3, 4, 7, 8, 11, 12, 100], types);
     }
+
+    [Fact]
+    public void Scenario1_FullStatusCaptures_MatchTheServerSimulation()
+    {
+        var scenario = SnowWarScenarioReplay.LoadScenario("scenario-1.json");
+        var captures = FullStatusCaptures();
+
+        Assert.NotEmpty(captures);
+
+        foreach (var capture in captures)
+            Assert.Equal(
+                JsonSerializer.Serialize(
+                    SnowWarScenarioReplay.FullStatusAfter(scenario, capture.Turn),
+                    SnowWarScenarioReplay.JSON
+                ),
+                JsonSerializer.Serialize(capture, SnowWarScenarioReplay.JSON)
+            );
+    }
+
+    [Fact]
+    public void Scenario1_FullStatusCaptures_CatchHumansBetweenTilesAndBallsInFlight()
+    {
+        foreach (var capture in FullStatusCaptures())
+        {
+            Assert.Contains(capture.Objects, o => o.Type == (int)SnowWarGameObjectType.Snowball);
+            Assert.Contains(
+                capture.Objects.Where(o => o.Type == (int)SnowWarGameObjectType.Human),
+                human => IsBetweenTiles(SnowWarHumanView.From(Snapshot(human)))
+            );
+        }
+    }
+
+    private static List<SnowWarRecordedFullStatus> FullStatusCaptures() =>
+        JsonSerializer.Deserialize<List<SnowWarRecordedFullStatus>>(
+            SnowWarScenarioReplay.ReadFixture("scenario-1.full-status.json"),
+            SnowWarScenarioReplay.JSON
+        )!;
+
+    private static bool IsBetweenTiles(SnowWarHumanView human) =>
+        (human.NextX, human.NextY) != (human.TileX, human.TileY)
+        && (human.X, human.Y)
+            != (SnowWarMath.TileToWorld(human.TileX), SnowWarMath.TileToWorld(human.TileY));
+
+    private static SnowWarGameObjectSnapshot Snapshot(SnowWarRecordedObject recorded) =>
+        new()
+        {
+            Type = (SnowWarGameObjectType)recorded.Type,
+            Id = recorded.Id,
+            Variables = [.. recorded.Variables],
+            Strings = [.. recorded.Strings],
+        };
 }

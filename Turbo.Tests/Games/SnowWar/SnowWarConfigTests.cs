@@ -71,6 +71,7 @@ public sealed class SnowWarConfigTests : IDisposable
         config.RayGunsEnabled.Should().BeTrue();
         config.LeaderboardMaxRows.Should().Be(50);
         config.LeaderboardRequestIntervalMilliseconds.Should().Be(1000);
+        config.MaxInputsPerSecond.Should().Be(20);
         config.ScoreFlushIntervalSeconds.Should().Be(5);
         config.MaxPendingScores.Should().Be(10000);
         config.PlayerTotalsCacheSeconds.Should().Be(30);

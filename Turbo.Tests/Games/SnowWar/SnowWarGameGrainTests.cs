@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Reflection;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
+using Orleans;
 using Turbo.Games;
 using Turbo.Games.Configuration;
 using Turbo.Games.SnowWar;
@@ -426,6 +427,33 @@ public sealed class SnowWarGameGrainTests
         await TickAsync(game);
 
         SentTo(2).Should().HaveCount(sentBefore);
+    }
+
+    [Fact]
+    public async Task a_running_game_that_goes_away_without_closing_frees_it_in_the_directory()
+    {
+        var game = await RunningGameAsync(2);
+
+        await ((Grain)game).OnDeactivateAsync(new(DeactivationReasonCode.ShuttingDown, ""), Ct);
+
+        DirectoryCalls(nameof(ISnowWarDirectoryGrain.OnGameDeactivatedAsync))
+            .Should()
+            .ContainSingle()
+            .Which.Args[0]
+            .Should()
+            .Be(GAME_ID);
+    }
+
+    [Fact]
+    public async Task a_closed_game_going_away_does_not_tell_the_directory_again()
+    {
+        var game = await RunningGameAsync(2);
+
+        await game.ExitAsync(1, Ct);
+        await game.ExitAsync(2, Ct);
+        await ((Grain)game).OnDeactivateAsync(new(DeactivationReasonCode.None, ""), Ct);
+
+        DirectoryCalls(nameof(ISnowWarDirectoryGrain.OnGameDeactivatedAsync)).Should().BeEmpty();
     }
 
     [Fact]

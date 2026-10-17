@@ -95,6 +95,11 @@ public static class GrainFactoryExtensions
     public static ISnowWarGameGrain GetSnowWarGameGrain(this IGrainFactory factory, int gameId) =>
         factory.GetGrain<ISnowWarGameGrain>(gameId);
 
+    public static ISnowWarInputGrain GetSnowWarInputGrain(
+        this IGrainFactory factory,
+        PlayerId playerId
+    ) => factory.GetGrain<ISnowWarInputGrain>((long)playerId.Value);
+
     public static IRoomDirectoryGrain GetRoomDirectoryGrain(this IGrainFactory factory) =>
         factory.GetGrain<IRoomDirectoryGrain>(SingletonGrainId.GLOBAL);
 
