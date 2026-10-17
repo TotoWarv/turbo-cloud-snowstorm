@@ -62,11 +62,7 @@ internal sealed partial class SnowWarDirectoryGrain
             }
         );
 
-        _state.Games[lobby.Id] = new SnowWarDirectoryGame
-        {
-            Id = lobby.Id,
-            Players = lobby.PlayerIds,
-        };
+        StoreGame(new SnowWarDirectoryGame { Id = lobby.Id, Players = lobby.PlayerIds });
 
         await SendAsync(
             lobby.PlayerIds,
@@ -88,7 +84,7 @@ internal sealed partial class SnowWarDirectoryGrain
 
     private async Task CancelGameAsync(SnowWarGameLobbySnapshot game, CancellationToken ct)
     {
-        _state.Games.Remove(game.GameId);
+        ForgetGame(game.GameId);
 
         await SendAsync(
             game.Players.Select(p => (PlayerId)p.UserId),

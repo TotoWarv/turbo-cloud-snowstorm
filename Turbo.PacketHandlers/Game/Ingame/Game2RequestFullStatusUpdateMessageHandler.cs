@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Orleans;
 using Turbo.Messages.Registry;
 using Turbo.Primitives.Messages.Incoming.Game.Ingame;
+using Turbo.Primitives.Orleans;
 
 namespace Turbo.PacketHandlers.Game.Ingame;
 
@@ -20,9 +21,9 @@ public class Game2RequestFullStatusUpdateMessageHandler(IGrainFactory grainFacto
         if (ctx.PlayerId <= 0)
             return;
 
-        if (await _grainFactory.GameOfAsync(ctx.PlayerId, ct).ConfigureAwait(false) is not { } game)
-            return;
-
-        await game.RequestFullStatusAsync(ctx.PlayerId, ct).ConfigureAwait(false);
+        await _grainFactory
+            .GetSnowWarInputGrain(ctx.PlayerId)
+            .RequestFullStatusAsync(ct)
+            .ConfigureAwait(false);
     }
 }

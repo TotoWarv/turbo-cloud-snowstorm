@@ -120,6 +120,16 @@ internal sealed partial class SnowWarDirectoryGrain : Grain, ISnowWarDirectoryGr
         await AdvanceQueueAsync(ct);
     }
 
+    public async Task OnGameDeactivatedAsync(int gameId, CancellationToken ct)
+    {
+        if (!_state.Games.ContainsKey(gameId))
+            return;
+
+        ForgetGame(gameId);
+
+        await AdvanceQueueAsync(ct);
+    }
+
     private async Task OnLobbyTimerAsync(CancellationToken ct)
     {
         ForgetExpiredBlocks();
@@ -153,11 +163,39 @@ internal sealed partial class SnowWarDirectoryGrain : Grain, ISnowWarDirectoryGr
     }
 
     private SnowWarDirectoryGame? GameOf(PlayerId playerId) =>
-        _state.Games.Values.FirstOrDefault(g => g.Players.Contains(playerId));
+        _state.GameIdOfPlayer.TryGetValue(playerId, out var gameId)
+        && _state.Games.TryGetValue(gameId, out var game)
+            ? game
+            : null;
+
+    private void StoreGame(SnowWarDirectoryGame game)
+    {
+        _state.Games[game.Id] = game;
+
+        foreach (var playerId in game.Players)
+            _state.GameIdOfPlayer[playerId] = game.Id;
+    }
+
+    private void ForgetGame(int gameId)
+    {
+        if (!_state.Games.Remove(gameId, out var game))
+            return;
+
+        foreach (var playerId in game.Players)
+            ForgetPlayerGame(playerId, gameId);
+    }
+
+    private void ForgetPlayerGame(PlayerId playerId, int gameId)
+    {
+        if (_state.GameIdOfPlayer.TryGetValue(playerId, out var current) && current == gameId)
+            _state.GameIdOfPlayer.Remove(playerId);
+    }
 
     private void RemoveFromGame(SnowWarDirectoryGame game, PlayerId playerId)
     {
         var remaining = game.Players.Remove(playerId);
+
+        ForgetPlayerGame(playerId, game.Id);
 
         if (remaining.IsEmpty)
             _state.Games.Remove(game.Id);

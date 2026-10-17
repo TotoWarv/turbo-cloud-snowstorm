@@ -33,6 +33,7 @@ public sealed class SnowWarHandlerTests
     private const string DIRECTORY_TYPE = "Turbo.Games.Grains.SnowWarDirectoryGrain";
     private const string GAME_TYPE = "Turbo.Games.Grains.SnowWarGameGrain";
     private const string SCORE_TYPE = "Turbo.Games.Grains.SnowWarScoreGrain";
+    private const string INPUT_TYPE = "Turbo.Games.Grains.SnowWarInputGrain";
     private const long SINGLETON_KEY = 0;
     private const int UNLIMITED = -1;
 
@@ -56,7 +57,7 @@ public sealed class SnowWarHandlerTests
         RoomHarness.SetField(grain, "_time", _clock);
         RoomHarness.SetField(grain, "_config", config);
 
-        if (type != SCORE_TYPE)
+        if (type is not (SCORE_TYPE or INPUT_TYPE))
             RoomHarness.SetField(grain, "_arenas", new SnowWarArenaCatalog(Options.Create(config)));
 
         return grain;
@@ -78,6 +79,22 @@ public sealed class SnowWarHandlerTests
         fakes.Instances[(typeof(ISnowWarScoreGrain), (object)SINGLETON_KEY)] = scores;
 
         return scores;
+    }
+
+    private void RealInput(Fakes fakes, int playerId)
+    {
+        var input = GrainHarness.Create(
+            typeof(GamesModule).Assembly,
+            INPUT_TYPE,
+            fakes,
+            _db,
+            playerId
+        );
+
+        RoomHarness.SetField(input, "_time", _clock);
+        RoomHarness.SetField(input, "_config", new SnowWarConfig());
+
+        fakes.Instances[(typeof(ISnowWarInputGrain), (object)(long)playerId)] = input;
     }
 
     private ISnowWarGameGrain RealGame(Fakes fakes, long gameId)
@@ -355,6 +372,7 @@ public sealed class SnowWarHandlerTests
     [Fact]
     public async Task a_move_target_reaches_the_players_game_with_its_coordinates()
     {
+        RealInput(_packets.Fakes, 1);
         _packets.Fakes.Handlers[nameof(ISnowWarDirectoryGrain.GetGameIdOfPlayerAsync)] = _ =>
             Task.FromResult<int?>(7);
 
@@ -380,6 +398,7 @@ public sealed class SnowWarHandlerTests
     [Fact]
     public async Task game_inputs_from_a_player_outside_any_game_go_nowhere()
     {
+        RealInput(_packets.Fakes, 1);
         await _packets.SendAsync(
             In("Game2MakeSnowballMessageEvent"),
             PacketHarness.Payload(w => w.Int(3).Int(0))

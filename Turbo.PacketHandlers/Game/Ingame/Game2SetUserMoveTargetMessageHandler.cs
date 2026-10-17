@@ -4,6 +4,7 @@ using Orleans;
 using Turbo.Messages.Registry;
 using Turbo.Primitives.Game.Enums;
 using Turbo.Primitives.Messages.Incoming.Game.Ingame;
+using Turbo.Primitives.Orleans;
 
 namespace Turbo.PacketHandlers.Game.Ingame;
 
@@ -21,11 +22,9 @@ public class Game2SetUserMoveTargetMessageHandler(IGrainFactory grainFactory)
         if (ctx.PlayerId <= 0)
             return;
 
-        if (await _grainFactory.GameOfAsync(ctx.PlayerId, ct).ConfigureAwait(false) is not { } game)
-            return;
-
-        await game.QueueInputAsync(
-                ctx.PlayerId,
+        await _grainFactory
+            .GetSnowWarInputGrain(ctx.PlayerId)
+            .QueueInputAsync(
                 SnowWarInput.MoveTarget,
                 [message.X, message.Y],
                 message.Turn,

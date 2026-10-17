@@ -30,6 +30,8 @@ public sealed class SnowWarConfig
 
     public bool RayGunsEnabled { get; init; } = true;
 
+    public int MaxInputsPerSecond { get; init; } = 20;
+
     public int LeaderboardMaxRows { get; init; } = 50;
 
     public int LeaderboardRequestIntervalMilliseconds { get; init; } = 1000;
