@@ -69,11 +69,27 @@ internal sealed partial class SnowWarGameGrain : Grain, ISnowWarGameGrain
 
     private ISnowWarDirectoryGrain Directory => _grainFactory.GetSnowWarDirectoryGrain();
 
-    public override Task OnDeactivateAsync(DeactivationReason reason, CancellationToken ct)
+    public override async Task OnDeactivateAsync(DeactivationReason reason, CancellationToken ct)
     {
         StopTimer();
 
-        return Task.CompletedTask;
+        if (_state.Phase is SnowWarGamePhase.Idle or SnowWarGamePhase.Closed)
+            return;
+
+        _state.Phase = SnowWarGamePhase.Closed;
+
+        try
+        {
+            await Directory.OnGameDeactivatedAsync(_state.GameId, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _logger.LogError(
+                ex,
+                "SnowWar game {GameId} could not tell the directory it went away",
+                _state.GameId
+            );
+        }
     }
 
     public async Task StartAsync(SnowWarGameLobbySnapshot lobby, CancellationToken ct)

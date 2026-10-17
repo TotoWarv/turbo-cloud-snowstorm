@@ -154,7 +154,9 @@ internal sealed partial class SnowWarDirectoryGrain
 
     private SnowWarLobby CreateLobby()
     {
-        var fieldType = _arenas.Arenas[Random.Shared.Next(_arenas.Arenas.Length)];
+        var fieldType = _arenas.Next(_state.LastFieldType);
+
+        _state.LastFieldType = fieldType;
 
         return new SnowWarLobby
         {

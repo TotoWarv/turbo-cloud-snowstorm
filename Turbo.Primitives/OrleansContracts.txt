@@ -96,6 +96,7 @@ interface [GrainInterfaceType("Turbo.Primitives.Game.Grains.ISnowWarDirectoryGra
   9E954F05: GetAccountStatusAsync(Turbo.Primitives.Players.PlayerId, System.Threading.CancellationToken) -> Task<Turbo.Primitives.Game.Snapshots.SnowWarAccountStatusSnapshot>
   EAC482A5: GetGameIdOfPlayerAsync(Turbo.Primitives.Players.PlayerId, System.Threading.CancellationToken) -> Task<int?>
   D0AA033D: LeaveLobbyAsync(Turbo.Primitives.Players.PlayerId, System.Threading.CancellationToken) -> Task
+  5F9CED53: OnGameDeactivatedAsync(int, System.Threading.CancellationToken) -> Task
   DDAB1834: OnGameFinishedAsync(int, System.Threading.CancellationToken) -> Task
   2C21EF13: OnPlayerLeftGameAsync(int, Turbo.Primitives.Players.PlayerId, bool, System.Threading.CancellationToken) -> Task
   CFF50D8D: QuickJoinAsync(Turbo.Primitives.Players.PlayerId, Turbo.Primitives.Game.Snapshots.SnowWarPlayerSnapshot, System.Threading.CancellationToken) -> Task
@@ -109,6 +110,10 @@ interface [GrainInterfaceType("Turbo.Primitives.Game.Grains.ISnowWarGameGrain")]
   359DE80B: RequestFullStatusAsync(Turbo.Primitives.Players.PlayerId, System.Threading.CancellationToken) -> Task
   BD82F824: StageReadyAsync(Turbo.Primitives.Players.PlayerId, System.Threading.CancellationToken) -> Task
   F54E350E: StartAsync(Turbo.Primitives.Game.Snapshots.SnowWarGameLobbySnapshot, System.Threading.CancellationToken) -> Task
+
+interface [GrainInterfaceType("Turbo.Primitives.Game.Grains.ISnowWarInputGrain")] Turbo.Primitives.Game.Grains.ISnowWarInputGrain [Version(0)]
+  834B14CA: QueueInputAsync(Turbo.Primitives.Game.Enums.SnowWarInput, int[], int, int, System.Threading.CancellationToken) -> Task
+  5165865D: RequestFullStatusAsync(System.Threading.CancellationToken) -> Task
 
 interface [GrainInterfaceType("Turbo.Primitives.Game.Grains.ISnowWarScoreGrain")] Turbo.Primitives.Game.Grains.ISnowWarScoreGrain [Version(0)]
   14B1D5D3: AddAsync(System.Collections.Immutable.ImmutableArray<Turbo.Primitives.Game.Snapshots.SnowWarScoreEntrySnapshot>, System.Threading.CancellationToken) -> Task

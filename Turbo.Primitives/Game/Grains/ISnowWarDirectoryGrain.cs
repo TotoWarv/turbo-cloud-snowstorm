@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Orleans;
+using Orleans.Concurrency;
 using Turbo.Primitives.Game.Snapshots;
 using Turbo.Primitives.Players;
 
@@ -37,5 +38,8 @@ public interface ISnowWarDirectoryGrain : IGrainWithIntegerKey
         CancellationToken ct
     );
 
+    public Task OnGameDeactivatedAsync(int gameId, CancellationToken ct);
+
+    [AlwaysInterleave]
     public Task<int?> GetGameIdOfPlayerAsync(PlayerId playerId, CancellationToken ct);
 }
